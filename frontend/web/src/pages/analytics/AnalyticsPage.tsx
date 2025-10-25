@@ -1,4 +1,4 @@
-import { ChartBarIcon, TrendingUpIcon, HomeIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import { ChartBarIcon, ArrowTrendingUpIcon, HomeIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 
 export default function AnalyticsPage() {
   const stats = [
@@ -14,7 +14,7 @@ export default function AnalyticsPage() {
       value: '8',
       change: '+23%',
       changeType: 'positive',
-      icon: TrendingUpIcon,
+      icon: ArrowTrendingUpIcon,
     },
     {
       name: 'Valor Promedio',
