@@ -1,15 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
 import { HomeIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 export default function AgentDashboard() {
-  const { data: properties, isLoading } = useQuery({
-    queryKey: ['properties'],
-    queryFn: async () => {
-      const response = await api.get('/properties');
-      return response.data.data.properties;
-    },
-  });
+  // Demo mode: No backend available yet
+  const properties = null;
+  const isLoading = false;
 
   if (isLoading) {
     return (
