@@ -6,6 +6,7 @@ import {
   ChartBarIcon,
   CalculatorIcon,
   ClockIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/store/auth';
 
@@ -19,6 +20,10 @@ export default function Sidebar() {
     { name: 'Chat', href: '/chat', icon: ChatBubbleLeftRightIcon, roles: ['AGENT', 'OWNER', 'BUYER'] },
     { name: 'Estimador', href: '/estimator', icon: CalculatorIcon, roles: ['AGENT', 'OWNER'] },
     { name: 'Analíticas', href: '/analytics', icon: ChartBarIcon, roles: ['AGENT', 'ADMIN_AGENCY'] },
+  ];
+
+  const bottomNavigation = [
+    { name: 'Planes y Precios', href: '/pricing', icon: SparklesIcon, highlight: true },
   ];
 
   const filteredNavigation = navigation.filter((item) =>
@@ -47,6 +52,36 @@ export default function Sidebar() {
               >
                 <item.icon className="mr-3 h-6 w-6" />
                 {item.name}
+              </NavLink>
+            ))}
+
+            {/* Separator */}
+            <div className="border-t border-gray-200 my-4"></div>
+
+            {/* Bottom Navigation */}
+            {bottomNavigation.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={({ isActive }) =>
+                  `group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${
+                    item.highlight
+                      ? isActive
+                        ? 'bg-gradient-to-r from-primary-600 to-purple-600 text-white'
+                        : 'bg-gradient-to-r from-primary-500 to-purple-500 text-white hover:from-primary-600 hover:to-purple-600'
+                      : isActive
+                      ? 'bg-primary-50 text-primary-600'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`
+                }
+              >
+                <item.icon className="mr-3 h-6 w-6" />
+                {item.name}
+                {user?.subscription_tier === 'free' && (
+                  <span className="ml-auto bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-0.5 rounded">
+                    Upgrade
+                  </span>
+                )}
               </NavLink>
             ))}
           </nav>

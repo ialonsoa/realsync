@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import { CalculatorIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/store/auth';
 
 export default function EstimatorPage() {
   const [propertyValue, setPropertyValue] = useState('450000');
   const [showResults, setShowResults] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const { user } = useAuthStore();
 
   // Peru tax calculations
   const UIT_2024 = 5150; // UIT value for 2024 in Peru
@@ -27,9 +33,57 @@ export default function EstimatorPage() {
   const sellerCosts = impuestoRenta + notaryFees * 0.5 + registryFees;
   const totalCosts = buyerCosts + sellerCosts;
 
-  const handleCalculate = (e: React.FormEvent) => {
+  const handleCalculate = async (e: React.FormEvent) => {
     e.preventDefault();
     setShowResults(true);
+    setSaveSuccess(false);
+    setSaveError('');
+
+    // Save calculation to database
+    if (!user) {
+      setSaveError('Usuario no autenticado');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      console.log('Saving calculation for user:', user.id);
+      console.log('Property value:', propertyValueNum);
+
+      const { data, error } = await supabase
+        .from('estimator_calculations')
+        .insert([
+          {
+            user_id: user.id,
+            property_value: propertyValueNum,
+            buyer_costs: buyerCosts,
+            seller_costs: sellerCosts,
+            total_costs: totalCosts,
+            calculation_details: {
+              alcabala,
+              impuestoRenta,
+              notaryFees,
+              registryFees,
+              UIT_2024,
+            },
+          },
+        ])
+        .select();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        setSaveError(error.message);
+      } else {
+        console.log('Calculation saved successfully:', data);
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error('Error saving calculation:', err);
+      setSaveError('Error al guardar el cálculo');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -91,11 +145,22 @@ export default function EstimatorPage() {
 
             <button
               type="submit"
-              className="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              disabled={isSaving}
+              className="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
             >
               <CalculatorIcon className="h-5 w-5 mr-2" />
-              Calcular Impuestos
+              {isSaving ? 'Guardando...' : 'Calcular Impuestos'}
             </button>
+            {saveSuccess && (
+              <p className="text-sm text-success-600 text-center mt-2">
+                ✓ Cálculo guardado exitosamente
+              </p>
+            )}
+            {saveError && (
+              <p className="text-sm text-red-600 text-center mt-2">
+                ✗ Error: {saveError}
+              </p>
+            )}
           </form>
 
           {/* Tax Information */}

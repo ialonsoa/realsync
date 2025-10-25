@@ -3,11 +3,11 @@ import { useAuthStore } from '@/store/auth';
 import { useNavigate } from 'react-router-dom';
 
 export default function Header() {
-  const { clearAuth } = useAuthStore();
+  const { signOut } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    clearAuth();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/login');
   };
 
