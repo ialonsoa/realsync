@@ -1,0 +1,347 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: realsync-postgres
+    environment:
+      POSTGRES_DB: realsync
+      POSTGRES_USER: realsync
+      POSTGRES_PASSWORD: realsync
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/shared/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - realsync-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U realsync"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: realsync-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - realsync-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # RabbitMQ Message Queue
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: realsync-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: realsync
+      RABBITMQ_DEFAULT_PASS: realsync
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - realsync-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./backend/services/auth
+      dockerfile: Dockerfile
+    container_name: realsync-auth
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://realsync:realsync@postgres:5432/realsync
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./backend/services/auth:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - realsync-network
+    command: npm run dev
+
+  # Property Service
+  property-service:
+    build:
+      context: ./backend/services/property
+      dockerfile: Dockerfile
+    container_name: realsync-property
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://realsync:realsync@postgres:5432/realsync
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./backend/services/property:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - realsync-network
+    command: npm run dev
+
+  # Transaction Service
+  transaction-service:
+    build:
+      context: ./backend/services/transaction
+      dockerfile: Dockerfile
+    container_name: realsync-transaction
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://realsync:realsync@postgres:5432/realsync
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://realsync:realsync@rabbitmq:5672
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./backend/services/transaction:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - realsync-network
+    command: npm run dev
+
+  # Document Service
+  document-service:
+    build:
+      context: ./backend/services/document
+      dockerfile: Dockerfile
+    container_name: realsync-document
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://realsync:realsync@postgres:5432/realsync
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./backend/services/document:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - realsync-network
+    command: npm run dev
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ./backend/services/notification
+      dockerfile: Dockerfile
+    container_name: realsync-notification
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://realsync:realsync@postgres:5432/realsync
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://realsync:realsync@rabbitmq:5672
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+    ports:
+      - "8005:8005"
+    volumes:
+      - ./backend/services/notification:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - realsync-network
+    command: npm run dev
+
+  # Estimator Service (Python)
+  estimator-service:
+    build:
+      context: ./backend/services/estimator
+      dockerfile: Dockerfile
+    container_name: realsync-estimator
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://realsync:realsync@postgres:5432/realsync
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "8006:8006"
+    volumes:
+      - ./backend/services/estimator:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - realsync-network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8006 --reload
+
+  # Chat Service
+  chat-service:
+    build:
+      context: ./backend/services/chat
+      dockerfile: Dockerfile
+    container_name: realsync-chat
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://realsync:realsync@postgres:5432/realsync
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "8007:8007"
+    volumes:
+      - ./backend/services/chat:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - realsync-network
+    command: npm run dev
+
+  # Analytics Service
+  analytics-service:
+    build:
+      context: ./backend/services/analytics
+      dockerfile: Dockerfile
+    container_name: realsync-analytics
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://realsync:realsync@postgres:5432/realsync
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "8008:8008"
+    volumes:
+      - ./backend/services/analytics:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - realsync-network
+    command: npm run dev
+
+  # API Gateway (Kong)
+  kong-database:
+    image: postgres:14-alpine
+    container_name: realsync-kong-db
+    environment:
+      POSTGRES_DB: kong
+      POSTGRES_USER: kong
+      POSTGRES_PASSWORD: kong
+    volumes:
+      - kong_data:/var/lib/postgresql/data
+    networks:
+      - realsync-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kong"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kong-migration:
+    image: kong:3.4-alpine
+    container_name: realsync-kong-migration
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+    depends_on:
+      kong-database:
+        condition: service_healthy
+    networks:
+      - realsync-network
+    command: kong migrations bootstrap
+
+  kong:
+    image: kong:3.4-alpine
+    container_name: realsync-kong
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8444
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8444:8444"
+    depends_on:
+      kong-database:
+        condition: service_healthy
+      kong-migration:
+        condition: service_completed_successfully
+    networks:
+      - realsync-network
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  # Web Frontend
+  web:
+    build:
+      context: ./frontend/web
+      dockerfile: Dockerfile.dev
+    container_name: realsync-web
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_WS_URL=ws://localhost:8007
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/web:/app
+      - /app/node_modules
+    networks:
+      - realsync-network
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  kong_data:
+
+networks:
+  realsync-network:
+    driver: bridge

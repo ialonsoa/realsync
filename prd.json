@@ -1,0 +1,1613 @@
+{
+  "prd_meta": {
+    "product_name": "RealSync",
+    "version": "1.0",
+    "owner": "Alonso Inca Roca Navarrete",
+    "created_date": "2025-10-24",
+    "market": "Peru (initial), LATAM expansion"
+  },
+  "problem_solution": {
+    "problem": {
+      "summary": "Real estate transactions are fragmented and non-collaborative across owners, buyers, and realtors.",
+      "pain_points": [
+        "Owners lack visibility into status and next steps",
+        "Broken communication among collaborating agents",
+        "No shared interface for owner, buyer, and realtor",
+        "Scattered paperwork (WhatsApp, email, cloud drives) causing loss and rework",
+        "Poor tracking of legal milestones (SUNARP, notary, minutas/escrituras)",
+        "Information asymmetry and low consumer trust"
+      ],
+      "evidence": [
+        "Recent case: Ana Milla transaction exposed gaps in communication, lost paperwork, and unclear progress",
+        "External agents joining late stages lacked updated context",
+        "Peru buyers (mid-20s to 30s) are highly sensitive to legal/financial risk"
+      ]
+    },
+    "solution": {
+      "summary": "AI-powered collaborative platform that unifies owner, buyer, and realtor with a shared timeline, documents hub, reminders, and live legal/tax calculators.",
+      "key_benefits": {
+        "emotional": [
+          "Buyers feel guided and informed",
+          "Owners feel in control and updated",
+          "Agents feel professional and effective"
+        ],
+        "social": [
+          "Agents present as modern, transparent, and up-to-date"
+        ],
+        "functional": [
+          "Single source of truth for steps, tasks, reminders, and documents",
+          "Real-time estimates for taxes/fees/net profit",
+          "Didactic explanations of legal/financial steps"
+        ]
+      }
+    }
+  },
+  "personas": [
+    {
+      "id": "persona_owner_ana",
+      "name": "Ana",
+      "age": 45,
+      "role": "Homeowner (seller)",
+      "demographics": "Upper-middle class; owns/inherited property; seeks to invest outside the city post-sale",
+      "goals": [
+        "Sell quickly",
+        "Stay informed with live updates",
+        "Understand net profit and taxes upfront"
+      ],
+      "pains": [
+        "Unclear next steps",
+        "Stress over legal paperwork and processes",
+        "No consolidated view of commission/taxes/profit"
+      ],
+      "job_to_be_done": "When I’m stressed because I don’t know the steps to sell, I want a guided ecosystem that keeps me on top of tasks so I feel confident and prepared.",
+      "willingness_to_pay": "Accepts +1% commission uplift for tech-enabled transparency (3% → 4%)."
+    },
+    {
+      "id": "persona_agent_ryan",
+      "name": "Ryan",
+      "age": 35,
+      "role": "Millennial realtor / small agency founder",
+      "demographics": "Upper-middle class; side-business growing into agency; open to investing in tools",
+      "goals": [
+        "Differentiate on quality and transparency",
+        "Accelerate buying/selling cycles",
+        "Keep associates aligned and updated per stage"
+      ],
+      "pains": [
+        "Poor tracking and inconsistent client experience",
+        "Pressure to grow without the right tools",
+        "Feels industry is lagging in innovation"
+      ],
+      "job_to_be_done": "When gaps exist in my process, I want an interface to centralize updates, tasks, and reminders so I can satisfy owners and buyers.",
+      "willingness_to_pay": {
+        "tiers_usd": {
+          "small": 45,
+          "medium": 125,
+          "large": 200
+        },
+        "notes": "Property tracking limits per tier; company pricing available."
+      }
+    }
+  ],
+  "goals_kpis": {
+    "product_goals": [
+      "Unify stakeholders into one collaborative workspace",
+      "Reduce time-to-close with automated tracking and reminders",
+      "Increase trust via transparent progress and explainers"
+    ],
+    "kpis": [
+      {
+        "name": "user_adoption_rate",
+        "definition": "% of invited realtors active monthly (MAU/Invited)",
+        "target": 0.40,
+        "period": "3 months post-launch"
+      },
+      {
+        "name": "process_completion_time",
+        "definition": "Average days to close a property",
+        "target_relative_change": -0.30,
+        "baseline_required": true
+      },
+      {
+        "name": "owner_buyer_satisfaction",
+        "definition": "Post-close CSAT (1–5)",
+        "target": 4.5
+      },
+      {
+        "name": "retention_rate_90d",
+        "definition": "% of users active after 90 days",
+        "target": 0.60
+      },
+      {
+        "name": "doc_error_rate",
+        "definition": "% of transactions with missing/incorrect documents",
+        "target": 0.05
+      }
+    ]
+  },
+  "users_roles_permissions": {
+    "roles": [
+      "OWNER",
+      "BUYER",
+      "AGENT",
+      "CO_AGENT",
+      "ADMIN_AGENCY"
+    ],
+    "permissions_matrix": [
+      {
+        "role": "OWNER",
+        "permissions": ["VIEW_TIMELINE", "VIEW_DOCS", "UPLOAD_DOCS_OWNER", "VIEW_TAX_PROFIT", "RECEIVE_NOTIFICATIONS", "CHAT_PARTICIPATE"]
+      },
+      {
+        "role": "BUYER",
+        "permissions": ["VIEW_TIMELINE", "VIEW_DOCS", "UPLOAD_DOCS_BUYER", "RECEIVE_NOTIFICATIONS", "CHAT_PARTICIPATE"]
+      },
+      {
+        "role": "AGENT",
+        "permissions": ["CREATE_PROPERTY", "EDIT_TIMELINE", "ASSIGN_TASKS", "UPLOAD_DOCS_AGENT", "INVITE_USERS", "CONFIGURE_REMINDERS", "CHAT_MODERATE", "VIEW_TAX_PROFIT", "RUN_ESTIMATORS", "VIEW_ANALYTICS"]
+      },
+      {
+        "role": "CO_AGENT",
+        "permissions": ["EDIT_TIMELINE", "ASSIGN_TASKS", "UPLOAD_DOCS_AGENT", "CHAT_PARTICIPATE", "CONFIGURE_REMINDERS"]
+      },
+      {
+        "role": "ADMIN_AGENCY",
+        "permissions": ["ORG_BILLING", "USER_MANAGEMENT", "VIEW_ANALYTICS_AGGREGATE", "WHITE_LABEL"]
+      }
+    ]
+  },
+  "feature_set": [
+    {
+      "id": "feat_multi_user_dashboards",
+      "name": "Multi-User Dashboards",
+      "priority": "P0",
+      "description": "Role-specific dashboards for Owner, Buyer, and Agent with a shared truth model.",
+      "user_stories": [
+        "As an Owner, I want a clean view of current stage, next tasks, and who is responsible so I feel in control.",
+        "As a Buyer, I want clear steps and deadlines so I can prepare documents on time.",
+        "As an Agent, I want a consolidated pipeline of properties with progress percent and blockers so I can prioritize."
+      ],
+      "acceptance_criteria": [
+        "Given a logged-in user, the dashboard reflects only the properties they are associated with.",
+        "Timeline shows current stage, next stage, overdue items, and responsible party.",
+        "Permissions ensure users view only allowed documents and fields."
+      ]
+    },
+    {
+      "id": "feat_process_tracker",
+      "name": "Real-Time Process Tracker",
+      "priority": "P0",
+      "description": "Visual timeline with color-coded stages (e.g., Verification → Contracts → Payments → Closing).",
+      "stages": [
+        "Preliminary Contracts (Minuta, Escritura Pública)",
+        "SUNARP Verification",
+        "Notarial Verification",
+        "Payments & Taxes",
+        "Closing & Delivery"
+      ],
+      "user_stories": [
+        "As a user, I want to see a progress bar that updates automatically when tasks complete.",
+        "As an agent, I want to set due dates and dependencies so reminders trigger correctly."
+      ],
+      "acceptance_criteria": [
+        "Timeline updates to reflect task completion and date changes in real time.",
+        "Overdue tasks are highlighted; dependencies block downstream steps until resolved.",
+        "Exportable transaction summary PDF at closing."
+      ]
+    },
+    {
+      "id": "feat_reminders_notifications",
+      "name": "Smart Reminders & Notifications",
+      "priority": "P0",
+      "description": "AI-generated reminders delivered via in-app, email, and WhatsApp/SMS.",
+      "examples": [
+        "“Hoy a las 5pm debes firmar la minuta.”",
+        "“Hoy a las 9pm debes subir tu DNI y la constancia.”"
+      ],
+      "user_stories": [
+        "As a user, I want reminders before critical milestones so I don't miss legal steps.",
+        "As an agent, I want configurable templates per stage and per role."
+      ],
+      "acceptance_criteria": [
+        "Users can opt in/out of channels (in-app, email, WhatsApp/SMS).",
+        "Reminders include task, due date, responsible party, and a deep link to the task.",
+        "System retries failed sends and logs delivery status."
+      ],
+      "dependencies": ["WhatsApp/SMS provider", "Calendar integration"]
+    },
+    {
+      "id": "feat_document_repository",
+      "name": "Document Repository",
+      "priority": "P0",
+      "description": "Centralized, permissioned file storage per property with versioning.",
+      "user_stories": [
+        "As any stakeholder, I want a single secure place to upload and review docs.",
+        "As an agent, I want to mark documents as 'approved' or 'requires changes'."
+      ],
+      "acceptance_criteria": [
+        "Role-based upload/view permissions (e.g., OWNER cannot see BUYER bank info unless shared).",
+        "Version history retained; downloads logged.",
+        "Virus scan and file type validation enabled."
+      ]
+    },
+    {
+      "id": "feat_tax_profit_estimator",
+      "name": "AI Legal & Tax Estimator",
+      "priority": "P1",
+      "description": "Real-time estimates for Alcabala, Impuesto a la Renta, commissions, and net profit.",
+      "inputs": [
+        "Sale price",
+        "Location/municipality",
+        "Ownership details (primary residence/exemptions if applicable)",
+        "Acquisition cost/date (for capital gains logic)"
+      ],
+      "user_stories": [
+        "As an owner, I want instant net profit estimates after taxes and fees.",
+        "As an agent, I want to share a transparent breakdown with clients."
+      ],
+      "acceptance_criteria": [
+        "Estimator displays itemized taxes/fees and net outcome.",
+        "Changes in input values update the estimate instantly.",
+        "All values shown in PEN; units and assumptions clearly labeled."
+      ]
+    },
+    {
+      "id": "feat_didactic_mode",
+      "name": "Didactic Step-by-Step Guidance",
+      "priority": "P1",
+      "description": "Plain-language explanations of each legal step, required docs, and responsible parties.",
+      "user_stories": [
+        "As a buyer/owner, I want simple explanations so I understand why steps matter.",
+        "As an agent, I want consistent info to reduce repetitive questions."
+      ],
+      "acceptance_criteria": [
+        "Each stage includes a 150–300 word explainer and checklist.",
+        "Glossary of terms (e.g., minuta, escritura, SUNARP) with links."
+      ]
+    },
+    {
+      "id": "feat_agent_collab",
+      "name": "Agent Collaboration Panel",
+      "priority": "P1",
+      "description": "Multi-agent notes, task assignment, mentions, and role-based access.",
+      "user_stories": [
+        "As an agent, I want to @mention collaborators and assign tasks with due dates.",
+        "As a co-agent, I need clarity on my responsibilities."
+      ],
+      "acceptance_criteria": [
+        "Threaded comments attached to timeline stages.",
+        "Task board (To Do / In Progress / Done) per property with assignees."
+      ]
+    },
+    {
+      "id": "feat_secure_chat",
+      "name": "Secure Unified Chat",
+      "priority": "P0",
+      "description": "Encrypted chat channel per property linking messages to tasks and documents.",
+      "user_stories": [
+        "As a user, I want a single chat instead of scattered WhatsApp threads.",
+        "As an agent, I want AI summaries of long conversations."
+      ],
+      "acceptance_criteria": [
+        "Chat supports file attachments with permission checks.",
+        "AI can generate a 'Daily Summary' for each property channel."
+      ]
+    },
+    {
+      "id": "feat_agent_analytics",
+      "name": "Agent Dashboard & Analytics",
+      "priority": "P2",
+      "description": "Funnel, average time per stage, bottlenecks, and satisfaction metrics.",
+      "user_stories": [
+        "As an agent, I want to identify delays and improve throughput.",
+        "As an agency admin, I want cross-team performance views."
+      ],
+      "acceptance_criteria": [
+        "Export to CSV/PDF.",
+        "Filters by agent, property type, date range."
+      ]
+    }
+  ],
+  "non_functional_requirements": {
+    "security": [
+      "OAuth 2.0 / OIDC authentication",
+      "RBAC for all resources",
+      "AES-256 at rest, TLS 1.2+ in transit",
+      "PII access logging and anomaly alerts"
+    ],
+    "performance": [
+      "p95 page load < 2.5s on 4G",
+      "Background jobs retry with exponential backoff"
+    ],
+    "reliability": [
+      "99.9% monthly uptime target for core APIs",
+      "Daily encrypted backups; 30-day retention"
+    ],
+    "usability": [
+      "Mobile-first; Android priority",
+      "Spanish (es-PE) first; English optional"
+    ],
+    "compliance_local": [
+      "Peru-focused tax/fees logic",
+      "SUNARP and notarial workflow alignment (no official integrations in MVP)"
+    ]
+  },
+  "integrations": [
+    {
+      "name": "WhatsApp/SMS",
+      "provider_examples": ["Twilio", "Meta WhatsApp Cloud API"],
+      "use": "Send reminders and updates"
+    },
+    {
+      "name": "Email",
+      "provider_examples": ["SendGrid", "Amazon SES"],
+      "use": "Transactional notifications"
+    },
+    {
+      "name": "Calendar",
+      "provider_examples": ["Google Calendar API"],
+      "use": "Stage deadlines and signing appointments"
+    },
+    {
+      "name": "Cloud Storage",
+      "provider_examples": ["AWS S3", "GCP Storage"],
+      "use": "Document repository"
+    }
+  ],
+  "data_model_outline": {
+    "entities": [
+      {
+        "name": "User",
+        "key_fields": ["id", "role", "name", "email", "phone", "agency_id?"]
+      },
+      {
+        "name": "Agency",
+        "key_fields": ["id", "name", "billing_plan", "members[]"]
+      },
+      {
+        "name": "Property",
+        "key_fields": ["id", "address", "city", "price", "owner_id", "agent_id", "status"]
+      },
+      {
+        "name": "Transaction",
+        "key_fields": ["id", "property_id", "buyer_id", "timeline_stage", "progress_percent", "close_date?"]
+      },
+      {
+        "name": "Task",
+        "key_fields": ["id", "transaction_id", "title", "assignee_id", "due_at", "status", "dependencies[]"]
+      },
+      {
+        "name": "Document",
+        "key_fields": ["id", "transaction_id", "uploader_id", "type", "url", "version", "visibility_scope"]
+      },
+      {
+        "name": "Message",
+        "key_fields": ["id", "transaction_id", "author_id", "body", "attachments[]", "created_at"]
+      },
+      {
+        "name": "EstimatorRun",
+        "key_fields": ["id", "property_id", "inputs_json", "outputs_json", "created_at"]
+      },
+      {
+        "name": "Notification",
+        "key_fields": ["id", "user_id", "channel", "payload", "status", "sent_at"]
+      }
+    ]
+  },
+  "flows": [
+    {
+      "id": "flow_onboard_property",
+      "name": "Onboard Property & Estimate",
+      "steps": [
+        "Agent creates Property and invites Owner (email/WhatsApp link).",
+        "Owner confirms details: price, location, ownership details.",
+        "System runs Estimator: Alcabala, Impuesto a la Renta, commissions, net profit.",
+        "Agent reviews and shares the breakdown with Owner from dashboard."
+      ],
+      "success_criteria": [
+        "Owner sees net profit and itemized taxes/fees in < 5 seconds after inputs.",
+        "Any missing inputs are requested via a guided form."
+      ]
+    },
+    {
+      "id": "flow_timeline_setup",
+      "name": "Setup Timeline & Reminders",
+      "steps": [
+        "Agent selects a template (Peru standard) with stages and default tasks.",
+        "Agent assigns responsibilities and due dates; dependencies auto-linked.",
+        "Users opt-in channels for notifications; calendar events are created."
+      ],
+      "success_criteria": [
+        "All participants can view current stage, next stage, and due tasks.",
+        "Reminder preview shows exact text and delivery channels."
+      ]
+    },
+    {
+      "id": "flow_docs_collab",
+      "name": "Documents Collaboration",
+      "steps": [
+        "Stakeholders upload docs to the relevant stage.",
+        "Agent reviews and marks Approved/Changes Requested.",
+        "Versioning tracked; approvals unlock dependent tasks."
+      ],
+      "success_criteria": [
+        "No stage can progress if required docs are missing (configurable).",
+        "All doc actions are audit-logged."
+      ]
+    },
+    {
+      "id": "flow_closing_archive",
+      "name": "Closing & Archive",
+      "steps": [
+        "Final validations pass; closing meeting scheduled and confirmed.",
+        "System generates a Closing Summary PDF (timeline + docs index).",
+        "Owner/Buyer receive archive link and satisfaction survey."
+      ],
+      "success_criteria": [
+        "Closing Summary PDF generated within 10 seconds.",
+        "Survey response rate > 40% for first 3 months."
+      ]
+    }
+  ],
+  "acceptance_test_suite": [
+    {
+      "feature_id": "feat_process_tracker",
+      "tests": [
+        "Create a timeline template; add dependencies; mark a prerequisite incomplete and verify downstream is blocked.",
+        "Change a due date and verify reminders reschedule and calendar events update."
+      ]
+    },
+    {
+      "feature_id": "feat_document_repository",
+      "tests": [
+        "Upload multiple versions; confirm version history and download links.",
+        "Attempt unauthorized access as BUYER to OWNER-only doc; expect denial."
+      ]
+    },
+    {
+      "feature_id": "feat_tax_profit_estimator",
+      "tests": [
+        "Change sale price; verify all fee/tax outputs and net profit update instantly.",
+        "Switch municipality; verify correct Alcabala logic applied."
+      ]
+    },
+    {
+      "feature_id": "feat_reminders_notifications",
+      "tests": [
+        "Disable WhatsApp for BUYER; ensure email + in-app still deliver.",
+        "Simulate failed delivery; verify retry and error log entry."
+      ]
+    }
+  ],
+  "pricing_model": {
+    "agents": {
+      "starter_usd_month": 45,
+      "growth_usd_month": 125,
+      "pro_usd_month": 200,
+      "limits": {
+        "starter_properties": 3,
+        "growth_properties": 7,
+        "pro_properties": "unlimited"
+      }
+    },
+    "owner_commission_uplift": {
+      "base_commission_percent": 3,
+      "tech_enabled_commission_percent": 4
+    },
+    "notes": "Enterprise/agency pricing and white-label options available."
+  },
+  "roadmap": [
+    {
+      "phase": "Discovery",
+      "duration_weeks": 4,
+      "deliverables": ["Wireframes", "User journeys", "Tax/legal logic spec"]
+    },
+    {
+      "phase": "MVP Development",
+      "duration_weeks": 8,
+      "deliverables": ["Dashboards", "Process tracker", "Docs repo", "Reminders", "Basic estimator"]
+    },
+    {
+      "phase": "Private Beta (Peru)",
+      "duration_weeks": 4,
+      "deliverables": ["Pilot with 5 realtors/10 owners", "Bug fixes", "UX polish"]
+    },
+    {
+      "phase": "Launch v1.0",
+      "quarter": "Q2 2026",
+      "deliverables": ["Public release", "Onboarding content", "Support playbooks"]
+    },
+    {
+      "phase": "LATAM Expansion",
+      "quarter": "Q4 2026",
+      "deliverables": ["Localization for Chile/Colombia", "Country-specific tax packs"]
+    }
+  ],
+  "localization": {
+    "language_default": "es-PE",
+    "currency": "PEN",
+    "date_time": "GMT-5",
+    "copy_tone": "Plain, didactic, confidence-building"
+  },
+  "tech_stack": {
+    "frontend": ["React (Web)", "React Native or Flutter (Mobile)"],
+    "backend": ["Node.js/Express or Django REST"],
+    "database": ["PostgreSQL", "Firebase (real-time sync optional)"],
+    "storage": ["AWS S3 or GCP Storage"],
+    "auth": ["OAuth 2.0 / OIDC", "JWT"],
+    "ai": ["LLM for summaries, reminders text, explainers; rules engine for taxes/fees"],
+    "observability": ["Structured logs", "Error tracking", "Audit trails"]
+  },
+  "risks_mitigations": [
+    {
+      "risk": "Peru legal/tax complexity",
+      "mitigation": "Partner with local legal advisors; externalize rules engine for quick updates"
+    },
+    {
+      "risk": "Low tech literacy",
+      "mitigation": "Guided mode, tooltips, video onboarding"
+    },
+    {
+      "risk": "Privacy concerns",
+      "mitigation": "RBAC, encryption, consent screens, data minimization"
+    },
+    {
+      "risk": "Adoption inertia",
+      "mitigation": "Free trials, integrate with WhatsApp/email to reduce friction"
+    }
+  ],
+  "user_journeys": {
+    "owner_journey": {
+      "persona": "Ana (Owner)",
+      "journey_stages": [
+        {
+          "stage": "Discovery & Invitation",
+          "touchpoints": ["WhatsApp invite from agent", "Email with onboarding link"],
+          "actions": ["Clicks link", "Creates account", "Verifies phone/email"],
+          "thoughts": ["Is this legit?", "Will this be complicated?"],
+          "emotions": ["Curious", "Slightly skeptical"],
+          "pain_points": ["Tech literacy concerns", "Time constraints"],
+          "opportunities": ["Simple video tutorial", "Agent personal message"]
+        },
+        {
+          "stage": "Property Setup & Estimation",
+          "touchpoints": ["Dashboard home", "Property details form", "Tax estimator"],
+          "actions": ["Reviews property info", "Confirms details", "Views profit estimate"],
+          "thoughts": ["How much will I really get?", "Are these taxes accurate?"],
+          "emotions": ["Anxious", "Hopeful"],
+          "pain_points": ["Complex tax terminology", "Uncertainty about accuracy"],
+          "opportunities": ["Plain language explainers", "Conservative estimates with disclaimers", "Video walkthrough of estimator"]
+        },
+        {
+          "stage": "Active Transaction",
+          "touchpoints": ["Timeline view", "Task notifications", "Document uploads", "Chat"],
+          "actions": ["Checks progress daily", "Uploads requested docs", "Responds to questions"],
+          "thoughts": ["Are we on track?", "What's next?", "Did they receive my documents?"],
+          "emotions": ["Engaged", "Occasionally stressed about deadlines"],
+          "pain_points": ["Unclear next steps", "Document requirements", "Legal jargon"],
+          "opportunities": ["Proactive reminders", "Clear checklists", "Document templates", "Progress celebrations"]
+        },
+        {
+          "stage": "Pre-Closing",
+          "touchpoints": ["Final checklist", "Closing date calendar", "Payment breakdown"],
+          "actions": ["Reviews final numbers", "Confirms closing appointment", "Prepares final docs"],
+          "thoughts": ["Is everything ready?", "Will there be surprises?"],
+          "emotions": ["Nervous excitement", "Anticipation"],
+          "pain_points": ["Fear of last-minute issues", "Complex closing procedures"],
+          "opportunities": ["Pre-closing video call", "Final walkthrough checklist", "What to expect guide"]
+        },
+        {
+          "stage": "Post-Closing",
+          "touchpoints": ["Closing summary PDF", "Satisfaction survey", "Archive access"],
+          "actions": ["Downloads documents", "Completes survey", "Refers friends"],
+          "thoughts": ["That went well!", "Would I use this again?"],
+          "emotions": ["Relief", "Satisfaction", "Gratitude"],
+          "pain_points": ["None if successful"],
+          "opportunities": ["Referral incentives", "Testimonial requests", "Stay connected for future needs"]
+        }
+      ]
+    },
+    "agent_journey": {
+      "persona": "Ryan (Agent)",
+      "journey_stages": [
+        {
+          "stage": "Account Setup",
+          "touchpoints": ["Landing page", "Signup flow", "Agency setup", "Billing"],
+          "actions": ["Signs up", "Selects plan", "Adds payment method", "Configures agency profile"],
+          "thoughts": ["Will this actually save me time?", "Is the ROI worth it?"],
+          "emotions": ["Hopeful", "Evaluative"],
+          "pain_points": ["Complex pricing", "Commitment concerns"],
+          "opportunities": ["Free trial", "Onboarding call", "ROI calculator", "Success stories"]
+        },
+        {
+          "stage": "First Property Onboarding",
+          "touchpoints": ["Create property", "Timeline template", "Invite stakeholders"],
+          "actions": ["Enters property details", "Selects Peru standard template", "Invites owner and buyer"],
+          "thoughts": ["Is this intuitive?", "Will my clients understand this?"],
+          "emotions": ["Focused", "Slightly uncertain"],
+          "pain_points": ["Learning curve", "Client adoption concerns"],
+          "opportunities": ["Guided tour", "Pre-filled templates", "Client invitation templates", "Video tutorials"]
+        },
+        {
+          "stage": "Managing Multiple Properties",
+          "touchpoints": ["Pipeline dashboard", "Task board", "Analytics", "Notifications"],
+          "actions": ["Reviews all properties", "Identifies bottlenecks", "Assigns tasks to co-agents", "Monitors progress"],
+          "thoughts": ["Where are the delays?", "Who needs follow-up?", "How can I optimize?"],
+          "emotions": ["Organized", "In control", "Productive"],
+          "pain_points": ["Information overload", "Prioritization challenges"],
+          "opportunities": ["Smart filters", "AI insights", "Priority scoring", "Daily digest emails"]
+        },
+        {
+          "stage": "Collaboration & Communication",
+          "touchpoints": ["Unified chat", "Task mentions", "Document approvals", "Client updates"],
+          "actions": ["@mentions co-agents", "Approves documents", "Sends updates to clients"],
+          "thoughts": ["Is everyone aligned?", "Are clients satisfied?"],
+          "emotions": ["Collaborative", "Professional"],
+          "pain_points": ["Keeping everyone updated", "Response delays"],
+          "opportunities": ["Automated status updates", "Read receipts", "AI summaries", "Template responses"]
+        },
+        {
+          "stage": "Closing & Reflection",
+          "touchpoints": ["Analytics dashboard", "Client satisfaction scores", "Performance metrics"],
+          "actions": ["Reviews transaction analytics", "Identifies improvements", "Plans next deals"],
+          "thoughts": ["What worked well?", "How can I be faster next time?"],
+          "emotions": ["Accomplished", "Analytical"],
+          "pain_points": ["Limited insights", "No benchmarking"],
+          "opportunities": ["Comparative analytics", "Best practices suggestions", "Automated reports"]
+        }
+      ]
+    },
+    "buyer_journey": {
+      "persona": "Carlos (First-time buyer, age 28)",
+      "journey_stages": [
+        {
+          "stage": "Invitation & First Login",
+          "touchpoints": ["Agent invitation", "Mobile app download", "Account creation"],
+          "actions": ["Receives WhatsApp invite", "Downloads app", "Creates account"],
+          "thoughts": ["What is this platform?", "Is my information safe?"],
+          "emotions": ["Curious", "Cautious", "Excited about buying"],
+          "pain_points": ["Unfamiliarity with process", "Security concerns"],
+          "opportunities": ["Welcome video", "Security badges", "Simple onboarding"]
+        },
+        {
+          "stage": "Understanding the Process",
+          "touchpoints": ["Timeline view", "Didactic guides", "Task list"],
+          "actions": ["Explores timeline", "Reads step explanations", "Reviews required documents"],
+          "thoughts": ["What do I need to do?", "When are deadlines?", "What is SUNARP?"],
+          "emotions": ["Overwhelmed", "Eager to learn"],
+          "pain_points": ["Complex terminology", "Fear of mistakes"],
+          "opportunities": ["Plain language", "Video explainers", "FAQ section", "Glossary links"]
+        },
+        {
+          "stage": "Document Preparation",
+          "touchpoints": ["Document checklist", "Upload interface", "Approval status"],
+          "actions": ["Gathers documents", "Scans and uploads", "Checks approval status"],
+          "thoughts": ["Did I upload the right version?", "Is this acceptable?"],
+          "emotions": ["Anxious", "Diligent"],
+          "pain_points": ["Document requirements unclear", "Format requirements"],
+          "opportunities": ["Document examples", "Format validators", "Instant feedback", "Mobile scanning"]
+        },
+        {
+          "stage": "Communication & Updates",
+          "touchpoints": ["Chat", "Notifications", "Progress updates"],
+          "actions": ["Asks questions in chat", "Responds to agent requests", "Checks progress"],
+          "thoughts": ["When will I hear back?", "Are we still on schedule?"],
+          "emotions": ["Engaged", "Sometimes impatient"],
+          "pain_points": ["Delayed responses", "Status uncertainty"],
+          "opportunities": ["Auto-responses", "Expected response times", "Proactive updates"]
+        },
+        {
+          "stage": "Closing Preparation",
+          "touchpoints": ["Final checklist", "Closing instructions", "Payment details"],
+          "actions": ["Reviews closing requirements", "Confirms attendance", "Prepares payment"],
+          "thoughts": ["Am I forgetting anything?", "Is this really happening?"],
+          "emotions": ["Nervous excitement", "Anticipation"],
+          "pain_points": ["Last-minute surprises", "Payment logistics"],
+          "opportunities": ["Step-by-step closing guide", "Payment assistance", "What to bring checklist"]
+        },
+        {
+          "stage": "Post-Purchase",
+          "touchpoints": ["Property handover", "Document archive", "Satisfaction survey"],
+          "actions": ["Receives keys", "Downloads all documents", "Provides feedback"],
+          "thoughts": ["I'm a homeowner!", "This was smoother than expected"],
+          "emotions": ["Elation", "Pride", "Gratitude"],
+          "pain_points": ["None if successful"],
+          "opportunities": ["Celebration moment", "Share success story", "Homeowner resources", "Referral program"]
+        }
+      ]
+    }
+  },
+  "technical_architecture": {
+    "system_overview": "Microservices architecture with event-driven communication, mobile-first responsive design, and real-time synchronization capabilities",
+    "architecture_layers": {
+      "presentation_layer": {
+        "web_app": {
+          "framework": "React 18+",
+          "state_management": "Redux Toolkit or Zustand",
+          "ui_library": "Material-UI or Tailwind CSS",
+          "features": ["Responsive design", "PWA capabilities", "Offline support for viewing", "Real-time updates via WebSockets"]
+        },
+        "mobile_app": {
+          "framework": "React Native (recommended) or Flutter",
+          "platforms": ["Android (priority)", "iOS"],
+          "features": ["Push notifications", "Document scanning", "Camera integration", "Biometric auth"]
+        },
+        "design_system": {
+          "components": "Shared component library",
+          "theming": "Peru real estate brand colors",
+          "accessibility": "WCAG 2.1 AA compliance target"
+        }
+      },
+      "api_gateway_layer": {
+        "technology": "Kong or AWS API Gateway",
+        "responsibilities": ["Authentication", "Rate limiting", "Request routing", "API versioning", "CORS handling"],
+        "rate_limits": {
+          "authenticated": "1000 req/hour",
+          "public": "100 req/hour"
+        }
+      },
+      "application_layer": {
+        "services": [
+          {
+            "name": "Auth Service",
+            "responsibility": "User authentication, authorization, session management",
+            "tech_stack": ["Node.js/Express", "Passport.js", "JWT"],
+            "database": "PostgreSQL (users, roles, permissions)"
+          },
+          {
+            "name": "Property Service",
+            "responsibility": "Property CRUD, search, status management",
+            "tech_stack": ["Node.js/Express or Django"],
+            "database": "PostgreSQL (properties, addresses, metadata)"
+          },
+          {
+            "name": "Transaction Service",
+            "responsibility": "Transaction lifecycle, timeline, stages, task management",
+            "tech_stack": ["Node.js/Express"],
+            "database": "PostgreSQL (transactions, tasks, timeline_events)"
+          },
+          {
+            "name": "Document Service",
+            "responsibility": "File upload, versioning, permissions, virus scanning",
+            "tech_stack": ["Node.js/Express", "Multer", "ClamAV"],
+            "storage": "AWS S3 or GCP Cloud Storage",
+            "database": "PostgreSQL (document metadata)"
+          },
+          {
+            "name": "Notification Service",
+            "responsibility": "Multi-channel notifications, reminders, delivery tracking",
+            "tech_stack": ["Node.js", "Bull queue", "Twilio", "SendGrid"],
+            "database": "PostgreSQL (notification logs)"
+          },
+          {
+            "name": "Estimator Service",
+            "responsibility": "Tax calculations, fee estimates, net profit computation",
+            "tech_stack": ["Python/FastAPI (for complex calculations)", "Rules engine"],
+            "database": "PostgreSQL (tax_rules, municipalities)"
+          },
+          {
+            "name": "Chat Service",
+            "responsibility": "Real-time messaging, file sharing, AI summaries",
+            "tech_stack": ["Node.js", "Socket.io or Firebase Realtime", "OpenAI API"],
+            "database": "PostgreSQL (messages, threads)"
+          },
+          {
+            "name": "Analytics Service",
+            "responsibility": "Data aggregation, reporting, insights generation",
+            "tech_stack": ["Python/FastAPI", "Pandas", "Plotly"],
+            "database": "PostgreSQL + TimescaleDB extension"
+          },
+          {
+            "name": "AI Service",
+            "responsibility": "Content generation, summaries, smart reminders",
+            "tech_stack": ["Python/FastAPI", "OpenAI API or Anthropic Claude API"],
+            "caching": "Redis for prompt caching"
+          }
+        ]
+      },
+      "data_layer": {
+        "primary_database": {
+          "technology": "PostgreSQL 14+",
+          "features": ["JSONB for flexible schemas", "Full-text search", "Row-level security", "Partitioning for scalability"],
+          "backup_strategy": "Daily automated backups to S3, 30-day retention, point-in-time recovery"
+        },
+        "cache_layer": {
+          "technology": "Redis",
+          "use_cases": ["Session storage", "API response caching", "Rate limiting", "Real-time counters"]
+        },
+        "object_storage": {
+          "technology": "AWS S3 or GCP Cloud Storage",
+          "buckets": ["documents-prod", "documents-staging", "backups"],
+          "lifecycle_policies": "Archive old documents to Glacier after 2 years"
+        },
+        "search_index": {
+          "technology": "Elasticsearch (optional for advanced search)",
+          "indexed_entities": ["Properties", "Documents", "Messages"]
+        }
+      },
+      "integration_layer": {
+        "message_queue": {
+          "technology": "RabbitMQ or AWS SQS",
+          "queues": ["notifications", "document-processing", "analytics-events", "ai-tasks"]
+        },
+        "event_bus": {
+          "technology": "EventBridge or custom pub/sub",
+          "events": ["transaction.created", "task.completed", "document.uploaded", "stage.changed"]
+        }
+      },
+      "infrastructure_layer": {
+        "hosting": {
+          "provider": "AWS or GCP",
+          "compute": "ECS/Fargate or GKE for containerized services",
+          "cdn": "CloudFront or Cloud CDN for static assets"
+        },
+        "monitoring": {
+          "apm": "New Relic or Datadog",
+          "logging": "CloudWatch or Stackdriver",
+          "error_tracking": "Sentry",
+          "uptime_monitoring": "Pingdom or UptimeRobot"
+        },
+        "security": {
+          "waf": "AWS WAF or Cloudflare",
+          "secrets_management": "AWS Secrets Manager or HashiCorp Vault",
+          "ssl_certificates": "Let's Encrypt with auto-renewal"
+        },
+        "ci_cd": {
+          "platform": "GitHub Actions or GitLab CI",
+          "deployment_strategy": "Blue-green deployments",
+          "environments": ["development", "staging", "production"]
+        }
+      }
+    },
+    "data_flow_diagrams": {
+      "property_onboarding_flow": [
+        "Agent (Web) → API Gateway → Auth Service (validate) → Property Service (create) → PostgreSQL",
+        "Property Service → Event Bus (property.created event)",
+        "Notification Service (subscribes) → sends invite to Owner via WhatsApp/Email",
+        "Owner clicks link → Auth Service (creates account) → redirected to Property dashboard"
+      ],
+      "document_upload_flow": [
+        "User (Mobile) → API Gateway → Auth Service (validate) → Document Service",
+        "Document Service → virus scan (ClamAV) → S3 upload → metadata to PostgreSQL",
+        "Document Service → Event Bus (document.uploaded event)",
+        "Transaction Service (subscribes) → checks if stage requirements met → updates progress",
+        "Notification Service → notifies Agent of new upload"
+      ],
+      "reminder_flow": [
+        "Cron job (every hour) → Transaction Service (queries upcoming tasks)",
+        "Transaction Service → Notification Service (queue reminders)",
+        "Notification Service → parallel sends (WhatsApp, Email, Push) → delivery status tracked",
+        "Failed sends → retry queue with exponential backoff"
+      ]
+    },
+    "scaling_strategy": {
+      "horizontal_scaling": "Auto-scaling groups for API services based on CPU/memory",
+      "database_scaling": "Read replicas for analytics queries, connection pooling",
+      "caching_strategy": "Aggressive caching of estimator results, property metadata",
+      "cdn_usage": "All static assets and public pages served via CDN"
+    }
+  },
+  "api_specifications": {
+    "base_url": "https://api.realsync.pe/v1",
+    "authentication": "Bearer token (JWT) in Authorization header",
+    "response_format": "JSON with consistent structure: {success, data, error, meta}",
+    "core_endpoints": [
+      {
+        "path": "/auth/login",
+        "method": "POST",
+        "description": "Authenticate user and return JWT",
+        "request_body": {
+          "email": "string (required)",
+          "password": "string (required)"
+        },
+        "response_success": {
+          "token": "string (JWT)",
+          "user": "User object",
+          "expires_in": "number (seconds)"
+        },
+        "error_codes": ["401: Invalid credentials", "429: Rate limit exceeded"]
+      },
+      {
+        "path": "/properties",
+        "method": "GET",
+        "description": "List properties for current user (filtered by role)",
+        "query_params": {
+          "status": "string (optional): active|closed|all",
+          "page": "number (optional, default: 1)",
+          "limit": "number (optional, default: 20)"
+        },
+        "response_success": {
+          "properties": "Array of Property objects",
+          "pagination": "{ page, limit, total, pages }"
+        },
+        "permissions": ["All authenticated users"]
+      },
+      {
+        "path": "/properties",
+        "method": "POST",
+        "description": "Create new property (agent only)",
+        "request_body": {
+          "address": "string (required)",
+          "city": "string (required)",
+          "price": "number (required)",
+          "owner_email": "string (required)",
+          "description": "string (optional)",
+          "metadata": "object (optional)"
+        },
+        "response_success": {
+          "property": "Property object",
+          "invitation_sent": "boolean"
+        },
+        "permissions": ["AGENT", "ADMIN_AGENCY"],
+        "error_codes": ["400: Validation error", "403: Forbidden"]
+      },
+      {
+        "path": "/properties/{id}",
+        "method": "GET",
+        "description": "Get property details",
+        "response_success": {
+          "property": "Property object with full details",
+          "transaction": "Active Transaction object (if exists)",
+          "participants": "Array of User objects"
+        },
+        "permissions": ["Property participants only"]
+      },
+      {
+        "path": "/transactions/{id}/timeline",
+        "method": "GET",
+        "description": "Get transaction timeline with all stages and tasks",
+        "response_success": {
+          "timeline": {
+            "current_stage": "string",
+            "progress_percent": "number",
+            "stages": "Array of Stage objects with tasks"
+          }
+        },
+        "permissions": ["Transaction participants"]
+      },
+      {
+        "path": "/transactions/{id}/tasks",
+        "method": "POST",
+        "description": "Create new task in transaction",
+        "request_body": {
+          "title": "string (required)",
+          "description": "string (optional)",
+          "assignee_id": "string (required)",
+          "due_at": "ISO 8601 datetime (required)",
+          "stage": "string (required)",
+          "dependencies": "Array of task IDs (optional)"
+        },
+        "response_success": {
+          "task": "Task object"
+        },
+        "permissions": ["AGENT", "CO_AGENT"]
+      },
+      {
+        "path": "/transactions/{id}/tasks/{taskId}",
+        "method": "PATCH",
+        "description": "Update task status or details",
+        "request_body": {
+          "status": "string (optional): pending|in_progress|completed",
+          "notes": "string (optional)"
+        },
+        "response_success": {
+          "task": "Updated Task object",
+          "timeline_updated": "boolean"
+        },
+        "permissions": ["Assignee or AGENT"]
+      },
+      {
+        "path": "/documents",
+        "method": "POST",
+        "description": "Upload document to transaction",
+        "request_type": "multipart/form-data",
+        "request_body": {
+          "transaction_id": "string (required)",
+          "file": "binary (required, max 50MB)",
+          "type": "string (required): dni|contract|deed|tax_form|other",
+          "visibility_scope": "string (required): all|agents_only|owner_only"
+        },
+        "response_success": {
+          "document": "Document object with URL",
+          "virus_scan_status": "string: clean|scanning|infected"
+        },
+        "error_codes": ["400: Invalid file type", "413: File too large", "451: Virus detected"]
+      },
+      {
+        "path": "/documents/{id}",
+        "method": "GET",
+        "description": "Download document (generates signed URL)",
+        "response_success": {
+          "download_url": "string (expires in 5 minutes)",
+          "document": "Document metadata"
+        },
+        "permissions": ["Based on visibility_scope"],
+        "audit": "Download logged with user_id and timestamp"
+      },
+      {
+        "path": "/estimator/calculate",
+        "method": "POST",
+        "description": "Calculate taxes and net profit",
+        "request_body": {
+          "property_id": "string (optional)",
+          "sale_price": "number (required)",
+          "municipality": "string (required)",
+          "acquisition_price": "number (optional)",
+          "acquisition_date": "ISO 8601 date (optional)",
+          "is_primary_residence": "boolean (default: false)"
+        },
+        "response_success": {
+          "estimator_run_id": "string",
+          "inputs": "Echo of inputs",
+          "outputs": {
+            "alcabala": "number",
+            "impuesto_renta": "number",
+            "commission": "number",
+            "other_fees": "number",
+            "total_deductions": "number",
+            "net_profit": "number"
+          },
+          "assumptions": "Array of strings explaining logic",
+          "disclaimer": "string"
+        },
+        "performance": "< 500ms response time"
+      },
+      {
+        "path": "/transactions/{id}/messages",
+        "method": "GET",
+        "description": "Get chat messages for transaction",
+        "query_params": {
+          "limit": "number (default: 50)",
+          "before": "message ID for pagination"
+        },
+        "response_success": {
+          "messages": "Array of Message objects",
+          "has_more": "boolean"
+        }
+      },
+      {
+        "path": "/transactions/{id}/messages",
+        "method": "POST",
+        "description": "Send chat message",
+        "request_body": {
+          "body": "string (required, max 2000 chars)",
+          "attachments": "Array of document IDs (optional)"
+        },
+        "response_success": {
+          "message": "Message object"
+        },
+        "real_time": "Broadcasted via WebSocket to all participants"
+      },
+      {
+        "path": "/notifications/preferences",
+        "method": "PUT",
+        "description": "Update notification preferences",
+        "request_body": {
+          "channels": {
+            "email": "boolean",
+            "whatsapp": "boolean",
+            "sms": "boolean",
+            "push": "boolean"
+          },
+          "frequency": "string: real_time|daily_digest|weekly_digest"
+        },
+        "response_success": {
+          "preferences": "Updated preferences object"
+        }
+      },
+      {
+        "path": "/analytics/agent/dashboard",
+        "method": "GET",
+        "description": "Get agent analytics",
+        "query_params": {
+          "date_from": "ISO 8601 date",
+          "date_to": "ISO 8601 date",
+          "agent_id": "string (optional, admin only)"
+        },
+        "response_success": {
+          "metrics": {
+            "total_properties": "number",
+            "active_transactions": "number",
+            "avg_time_to_close": "number (days)",
+            "satisfaction_score": "number",
+            "bottleneck_stages": "Array of {stage, avg_duration}"
+          }
+        },
+        "permissions": ["AGENT (own data)", "ADMIN_AGENCY (all agents)"]
+      }
+    ],
+    "webhooks": {
+      "description": "For enterprise clients to receive real-time updates",
+      "supported_events": ["transaction.created", "transaction.completed", "document.uploaded", "task.completed"],
+      "payload_format": {
+        "event": "string",
+        "timestamp": "ISO 8601",
+        "data": "Event-specific payload"
+      },
+      "security": "HMAC signature verification"
+    }
+  },
+  "ui_ux_specifications": {
+    "design_principles": [
+      "Mobile-first: Optimize for Android devices (primary user base)",
+      "Clarity over complexity: Prioritize essential information",
+      "Trust-building: Use visual cues for security and transparency",
+      "Didactic: Guide users with contextual help and explanations",
+      "Responsive feedback: Immediate visual confirmation of actions"
+    ],
+    "key_screens": {
+      "owner_dashboard": {
+        "components": [
+          "Property card (hero): Address, current stage, progress bar",
+          "Next action card: 'Your next step' with CTA and deadline",
+          "Net profit estimate: Large, prominent display",
+          "Timeline snapshot: Current stage highlighted, next stage preview",
+          "Recent activity feed: Last 5 updates",
+          "Quick actions: Upload document, View chat, Contact agent"
+        ],
+        "visual_hierarchy": "Progress bar → Next action → Net profit → Timeline",
+        "empty_state": "Welcoming message with 'What to expect' guide"
+      },
+      "agent_pipeline": {
+        "layout": "Kanban board or list view (toggle)",
+        "columns": ["Pre-contract", "Verification", "Contracts", "Payments", "Closing"],
+        "property_cards": {
+          "info": ["Address", "Owner name", "Progress %", "Days active", "Next deadline"],
+          "status_indicators": ["On track (green)", "At risk (yellow)", "Blocked (red)"],
+          "quick_actions": ["View details", "Add task", "Message participants"]
+        },
+        "filters": ["Status", "Agent", "Date range", "Property type"],
+        "search": "Full-text search across properties and owners"
+      },
+      "timeline_view": {
+        "layout": "Vertical timeline with expandable stages",
+        "stage_card": {
+          "header": "Stage name, status icon, completion %",
+          "body": "Description, tasks list, dependencies",
+          "footer": "Responsible party, due date, actions"
+        },
+        "task_item": {
+          "info": "Title, assignee avatar, due date, status checkbox",
+          "states": ["Not started (gray)", "In progress (blue)", "Completed (green)", "Overdue (red)"]
+        },
+        "interactions": ["Expand/collapse stages", "Check off tasks", "Add comments", "Upload docs"]
+      },
+      "document_repository": {
+        "layout": "Grid or list view (toggle)",
+        "document_card": {
+          "preview": "Thumbnail or file icon",
+          "info": "Name, type, uploader, date, version, status",
+          "actions": ["View", "Download", "Share", "Delete (if permissions)"]
+        },
+        "filters": ["Document type", "Uploader role", "Date range", "Status"],
+        "upload_flow": "Drag-drop or click to upload → Type selection → Visibility settings → Confirmation"
+      },
+      "tax_estimator": {
+        "layout": "Split screen: Inputs (left) | Results (right)",
+        "inputs": {
+          "fields": ["Sale price", "Municipality selector", "Acquisition details (collapsible)", "Primary residence toggle"],
+          "validation": "Real-time, with helpful error messages"
+        },
+        "results": {
+          "display": "Itemized breakdown with tooltips for each fee",
+          "net_profit": "Large, bold, color-coded (green if positive)",
+          "visual": "Pie chart or bar chart of deductions",
+          "actions": ["Save estimate", "Share with owner", "Adjust inputs"]
+        }
+      },
+      "chat_interface": {
+        "layout": "Standard messaging UI with property context sidebar",
+        "features": ["Threaded conversations", "File attachments", "Message reactions", "@mentions", "AI summary button"],
+        "message_bubble": "Sender name, avatar, timestamp, read status",
+        "context_sidebar": "Property details, current stage, quick links to docs/timeline"
+      }
+    },
+    "navigation_structure": {
+      "primary_nav_agent": ["Pipeline", "Analytics", "Notifications", "Settings"],
+      "primary_nav_owner_buyer": ["My Property", "Timeline", "Documents", "Chat", "Notifications"],
+      "secondary_nav": "Breadcrumbs for deep navigation"
+    },
+    "component_library": {
+      "buttons": {
+        "primary": "Solid, high-contrast for main CTAs",
+        "secondary": "Outlined for secondary actions",
+        "tertiary": "Text-only for low-priority actions"
+      },
+      "form_inputs": {
+        "text_fields": "Labeled, with placeholder and helper text",
+        "selectors": "Dropdown for <10 options, autocomplete for >10",
+        "date_pickers": "Calendar UI with locale support",
+        "file_upload": "Drag-drop zone with progress indicator"
+      },
+      "feedback_elements": {
+        "success": "Green checkmark with confirmation message",
+        "error": "Red alert with actionable message",
+        "loading": "Skeleton screens or spinners",
+        "tooltips": "Info icons with hover/tap explanations"
+      }
+    },
+    "accessibility": {
+      "standards": "WCAG 2.1 AA compliance",
+      "features": ["Keyboard navigation", "Screen reader support", "High contrast mode", "Scalable fonts"],
+      "color_contrast": "Minimum 4.5:1 for text, 3:1 for UI components"
+    },
+    "responsive_breakpoints": {
+      "mobile": "< 640px (primary target)",
+      "tablet": "640px - 1024px",
+      "desktop": "> 1024px"
+    }
+  },
+  "error_handling": {
+    "client_errors": [
+      {
+        "code": 400,
+        "name": "Bad Request",
+        "user_message": "Por favor verifica la información ingresada.",
+        "developer_message": "Validation errors in request body",
+        "retry_strategy": "Do not retry; fix inputs"
+      },
+      {
+        "code": 401,
+        "name": "Unauthorized",
+        "user_message": "Tu sesión ha expirado. Por favor inicia sesión nuevamente.",
+        "developer_message": "Invalid or expired token",
+        "retry_strategy": "Redirect to login"
+      },
+      {
+        "code": 403,
+        "name": "Forbidden",
+        "user_message": "No tienes permiso para realizar esta acción.",
+        "developer_message": "Insufficient permissions",
+        "retry_strategy": "Do not retry; check permissions"
+      },
+      {
+        "code": 404,
+        "name": "Not Found",
+        "user_message": "El recurso solicitado no existe.",
+        "developer_message": "Resource not found",
+        "retry_strategy": "Do not retry; verify resource ID"
+      },
+      {
+        "code": 413,
+        "name": "Payload Too Large",
+        "user_message": "El archivo es demasiado grande. Máximo 50MB.",
+        "developer_message": "File size exceeds limit",
+        "retry_strategy": "Do not retry; reduce file size"
+      },
+      {
+        "code": 429,
+        "name": "Too Many Requests",
+        "user_message": "Demasiadas solicitudes. Intenta nuevamente en unos minutos.",
+        "developer_message": "Rate limit exceeded",
+        "retry_strategy": "Exponential backoff with jitter"
+      }
+    ],
+    "server_errors": [
+      {
+        "code": 500,
+        "name": "Internal Server Error",
+        "user_message": "Algo salió mal. Ya hemos sido notificados y estamos trabajando en una solución.",
+        "developer_message": "Unhandled exception in server",
+        "retry_strategy": "Retry with exponential backoff (max 3 attempts)",
+        "alerting": "Immediate PagerDuty alert"
+      },
+      {
+        "code": 503,
+        "name": "Service Unavailable",
+        "user_message": "El servicio está temporalmente no disponible. Intenta nuevamente en unos momentos.",
+        "developer_message": "Dependency unavailable or circuit breaker open",
+        "retry_strategy": "Retry with exponential backoff (max 5 attempts)"
+      }
+    ],
+    "edge_cases": {
+      "concurrent_updates": {
+        "scenario": "Two agents update the same task simultaneously",
+        "handling": "Optimistic locking with version field; last write wins with conflict notification"
+      },
+      "partial_document_upload": {
+        "scenario": "Upload interrupted mid-transfer",
+        "handling": "Resumable uploads using S3 multipart; client retries from last chunk"
+      },
+      "deleted_user_reassignment": {
+        "scenario": "User deleted while assigned to tasks",
+        "handling": "Soft delete user; reassign tasks to transaction creator (agent)"
+      },
+      "timezone_mismatches": {
+        "scenario": "Agent in GMT-5, owner traveling in GMT+1",
+        "handling": "All datetimes stored in UTC; displayed in user's local timezone"
+      },
+      "missing_tax_rules": {
+        "scenario": "Municipality not in tax database",
+        "handling": "Estimator returns conservative fallback values with clear disclaimer"
+      },
+      "circular_task_dependencies": {
+        "scenario": "Task A depends on B, B depends on A",
+        "handling": "Dependency validation on create/update; reject with helpful error"
+      },
+      "virus_infected_file": {
+        "scenario": "User uploads malware",
+        "handling": "Quarantine file, notify user and admin, log security event"
+      }
+    },
+    "graceful_degradation": {
+      "ai_service_down": "Fall back to template-based reminders and skip summaries",
+      "whatsapp_api_down": "Queue messages and send via email; retry WhatsApp when available",
+      "estimator_service_slow": "Show cached estimate with timestamp; refresh asynchronously"
+    }
+  },
+  "analytics_monitoring": {
+    "business_metrics": {
+      "acquisition": [
+        "New agent signups per week",
+        "Activation rate (% completing first property onboarding)",
+        "Invitation conversion rate (% of invited owners/buyers who activate)"
+      ],
+      "engagement": [
+        "Daily/Weekly/Monthly Active Users (DAU/WAU/MAU)",
+        "Average properties per agent",
+        "Average session duration",
+        "Feature adoption rates (% using estimator, chat, analytics)"
+      ],
+      "retention": [
+        "7-day, 30-day, 90-day retention cohorts",
+        "Churn rate by plan tier",
+        "Net Revenue Retention (NRR)"
+      ],
+      "satisfaction": [
+        "NPS score (post-closing survey)",
+        "CSAT by feature",
+        "Support ticket volume and resolution time"
+      ],
+      "efficiency": [
+        "Average days to close (benchmark vs. traditional)",
+        "Task completion rate",
+        "Document approval cycle time",
+        "% transactions with zero errors"
+      ]
+    },
+    "technical_metrics": {
+      "performance": [
+        "API response time (p50, p95, p99)",
+        "Page load time (First Contentful Paint, Time to Interactive)",
+        "Database query performance",
+        "Cache hit rate"
+      ],
+      "reliability": [
+        "Uptime % (by service)",
+        "Error rate (by endpoint)",
+        "Failed job rate (by queue)",
+        "Incident count and MTTR (Mean Time To Recovery)"
+      ],
+      "usage": [
+        "API calls per endpoint",
+        "Bandwidth consumption",
+        "Storage usage",
+        "Active connections (WebSocket)"
+      ]
+    },
+    "user_behavior_tracking": {
+      "events": [
+        "property_created",
+        "timeline_viewed",
+        "task_completed",
+        "document_uploaded",
+        "estimator_run",
+        "message_sent",
+        "notification_clicked",
+        "help_viewed"
+      ],
+      "properties": {
+        "user_id": "string",
+        "role": "string",
+        "timestamp": "ISO 8601",
+        "session_id": "string",
+        "device_type": "mobile|tablet|desktop",
+        "platform": "android|ios|web"
+      },
+      "tools": "Mixpanel or Amplitude for product analytics"
+    },
+    "dashboards": {
+      "executive_dashboard": {
+        "metrics": ["Total properties", "Active transactions", "MRR", "NPS", "Uptime"],
+        "refresh": "Real-time"
+      },
+      "product_dashboard": {
+        "metrics": ["Feature adoption", "User flows", "Funnel conversion", "A/B test results"],
+        "refresh": "Hourly"
+      },
+      "engineering_dashboard": {
+        "metrics": ["Deployment frequency", "Error rates", "Performance", "Alert status"],
+        "refresh": "Real-time",
+        "tool": "Datadog or Grafana"
+      }
+    },
+    "alerting": {
+      "critical_alerts": [
+        "Uptime < 99.5% in last hour → PagerDuty to on-call engineer",
+        "Error rate > 5% on core endpoints → Slack #incidents",
+        "Payment processing failure → Email to finance team"
+      ],
+      "warning_alerts": [
+        "API response time p95 > 3s → Slack #engineering",
+        "Daily active users drop > 20% → Slack #product",
+        "Storage approaching 80% capacity → Email to DevOps"
+      ]
+    }
+  },
+  "go_to_market_strategy": {
+    "target_segments": {
+      "primary": {
+        "segment": "Millennial real estate agents (age 28-40) in Lima",
+        "size": "~500 active agents",
+        "characteristics": ["Tech-savvy", "Building personal brand", "1-5 transactions/month"],
+        "acquisition_channels": ["LinkedIn ads", "Real estate networking events", "Referrals"]
+      },
+      "secondary": {
+        "segment": "Small real estate agencies (2-10 agents) in Peru urban centers",
+        "size": "~200 agencies",
+        "characteristics": ["Seeking differentiation", "Budget for tools", "Eager for growth"],
+        "acquisition_channels": ["Direct outreach", "Industry publications", "Webinars"]
+      }
+    },
+    "positioning": "The modern, transparent real estate platform that makes agents look like heroes and clients feel in control",
+    "value_propositions": {
+      "for_agents": "Close deals 30% faster, impress clients with transparency, and scale without chaos",
+      "for_owners": "Know exactly where you stand, what's next, and how much you'll make",
+      "for_buyers": "Navigate the complex buying process with confidence and clarity"
+    },
+    "launch_phases": {
+      "phase_1_private_beta": {
+        "duration": "4 weeks",
+        "participants": "5 hand-selected agents, 10-15 properties",
+        "goals": ["Validate core flows", "Collect feedback", "Build case studies"],
+        "success_criteria": "4+ NPS, 80% feature adoption, 2 testimonials"
+      },
+      "phase_2_early_access": {
+        "duration": "8 weeks",
+        "participants": "50 agents (application-based)",
+        "incentive": "Lifetime 30% discount",
+        "goals": ["Stress-test platform", "Refine onboarding", "Generate word-of-mouth"],
+        "success_criteria": "70% retention, 50% referral rate"
+      },
+      "phase_3_public_launch": {
+        "date": "Q2 2026",
+        "strategy": "Product Hunt launch, PR campaign, LinkedIn thought leadership",
+        "goals": ["500 agent signups in first quarter", "Establish brand presence"],
+        "budget": "$30K USD for ads and events"
+      }
+    },
+    "pricing_strategy": {
+      "model": "Freemium with paid tiers",
+      "free_tier": {
+        "limits": "1 active property, basic features",
+        "purpose": "Low-friction trial for skeptical agents"
+      },
+      "paid_tiers": "As defined in pricing_model section",
+      "annual_discount": "20% off (2 months free)",
+      "enterprise": "Custom pricing for 10+ agents"
+    },
+    "content_marketing": {
+      "blog_topics": [
+        "How to sell a property in Peru: Complete 2026 guide",
+        "Understanding SUNARP and property verification",
+        "Tax calculator: How much will you really make on your sale?",
+        "Modern real estate agent toolkit"
+      ],
+      "seo_keywords": ["vender propiedad Perú", "calculadora impuestos inmobiliarios", "proceso SUNARP"],
+      "video_content": ["Product walkthrough", "Customer success stories", "Legal step explainers"]
+    },
+    "partnerships": {
+      "potential_partners": [
+        "Real estate training academies (co-marketing)",
+        "Mortgage brokers (referral exchange)",
+        "Legal/notarial services (integration opportunities)",
+        "Real estate listing platforms (API integration)"
+      ]
+    },
+    "sales_strategy": {
+      "model": "Product-led growth with sales assist for enterprise",
+      "self_service": "Agent can sign up, onboard, and pay without human interaction",
+      "sales_assisted": "For agencies 10+ agents, assign account executive",
+      "sales_tools": ["Demo environment", "ROI calculator", "Comparison sheet vs. traditional methods"]
+    }
+  },
+  "customer_success_plan": {
+    "onboarding": {
+      "agent_onboarding": {
+        "timeline": "Week 1",
+        "steps": [
+          "Day 1: Welcome email with video walkthrough",
+          "Day 2: In-app guided tour on first login",
+          "Day 3: Email: 'Create your first property'",
+          "Day 5: Check-in email: 'Need help?'",
+          "Day 7: Onboarding call with success manager (optional, offered to all)"
+        ],
+        "success_criteria": "Agent creates 1+ property and invites 1+ stakeholder within 7 days"
+      },
+      "owner_buyer_onboarding": {
+        "timeline": "Day 1",
+        "steps": [
+          "Receive invitation from agent",
+          "Click link → simple account creation",
+          "Watch 90-second explainer video",
+          "See property dashboard with 'What to expect' guide"
+        ],
+        "success_criteria": "User logs in and views timeline within 24 hours of invitation"
+      }
+    },
+    "support_channels": {
+      "self_service": {
+        "help_center": "Searchable knowledge base with articles and videos",
+        "in_app_chat": "AI-powered chatbot for common questions",
+        "status_page": "Real-time uptime and incident updates"
+      },
+      "assisted_support": {
+        "email": "support@realsync.pe, 24-hour response SLA",
+        "phone_whatsapp": "For paid tiers, business hours (9am-6pm GMT-5)",
+        "priority_support": "For Pro and Enterprise, <2 hour response SLA"
+      }
+    },
+    "success_programs": {
+      "agent_certification": {
+        "description": "Training program covering all platform features",
+        "incentive": "Certified agents get 'RealSync Expert' badge for marketing"
+      },
+      "office_hours": {
+        "schedule": "Weekly Zoom session for Q&A and best practices",
+        "target": "New and struggling users"
+      },
+      "customer_advisory_board": {
+        "participants": "10-15 top agents",
+        "frequency": "Quarterly",
+        "purpose": "Product feedback, roadmap input, beta testing"
+      }
+    },
+    "health_monitoring": {
+      "health_score_components": [
+        "Login frequency (30%)",
+        "Feature usage breadth (20%)",
+        "Properties created (20%)",
+        "Transactions completed (20%)",
+        "Support ticket sentiment (10%)"
+      ],
+      "intervention_triggers": {
+        "red_flag": "No login in 14 days → automated re-engagement email",
+        "yellow_flag": "Low feature adoption → success manager outreach",
+        "green": "High activity → upsell opportunity or testimonial request"
+      }
+    },
+    "churn_prevention": {
+      "early_warning_signals": ["Decreasing logins", "Cancellation page visit", "Negative support interaction"],
+      "retention_tactics": [
+        "Personalized check-in call",
+        "Discount offer (1 month free)",
+        "Feature education (maybe they don't know about X)",
+        "Pause option instead of cancel"
+      ],
+      "exit_interview": "Survey sent to all churned users; insights reviewed monthly"
+    }
+  },
+  "appendices": {
+    "framework": "Jeff Dyer – Innovator's DNA (Associating, Questioning, Observing, Networking, Experimenting)",
+    "glossary": [
+      { "term": "Minuta", "definition": "Preliminary sales contract document" },
+      { "term": "Escritura Pública", "definition": "Public deed formalizing the sale" },
+      { "term": "SUNARP", "definition": "Peru's public registry for property/legal verification" },
+      { "term": "Alcabala", "definition": "Property transfer tax" },
+      { "term": "Impuesto a la Renta", "definition": "Income tax on capital gain from sale" }
+    ],
+    "references": [
+      "Peru tax code (Texto Único Ordenado de la Ley del Impuesto a la Renta)",
+      "SUNARP procedures and requirements documentation",
+      "Real estate market research: Peru 2024-2025",
+      "Competitor analysis: PropTech landscape LATAM"
+    ],
+    "change_log": [
+      {
+        "version": "1.0",
+        "date": "2025-10-24",
+        "changes": "Initial PRD creation with comprehensive specifications"
+      }
+    ]
+  }
+}

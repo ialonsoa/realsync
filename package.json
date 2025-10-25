@@ -1,0 +1,77 @@
+{
+  "name": "realsync",
+  "version": "1.0.0",
+  "description": "AI-Powered Real Estate Collaboration Platform for Peru",
+  "private": true,
+  "workspaces": [
+    "backend/services/*",
+    "backend/shared/*",
+    "frontend/web",
+    "frontend/mobile"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm:dev:*\"",
+    "dev:auth": "cd backend/services/auth && npm run dev",
+    "dev:property": "cd backend/services/property && npm run dev",
+    "dev:transaction": "cd backend/services/transaction && npm run dev",
+    "dev:document": "cd backend/services/document && npm run dev",
+    "dev:notification": "cd backend/services/notification && npm run dev",
+    "dev:chat": "cd backend/services/chat && npm run dev",
+    "dev:analytics": "cd backend/services/analytics && npm run dev",
+    "dev:web": "cd frontend/web && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "npm run build -ws --if-present",
+    "build:frontend": "cd frontend/web && npm run build",
+    "test": "npm run test -ws --if-present",
+    "test:e2e": "playwright test",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "migrate": "cd backend/shared/database && npm run migrate",
+    "migrate:rollback": "cd backend/shared/database && npm run migrate:rollback",
+    "seed": "cd backend/shared/database && npm run seed",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
+    "prepare": "husky install"
+  },
+  "keywords": [
+    "real-estate",
+    "proptech",
+    "peru",
+    "collaboration",
+    "ai",
+    "microservices"
+  ],
+  "author": "Alonso Inca Roca Navarrete",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.1.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}
