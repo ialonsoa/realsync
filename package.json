@@ -34,7 +34,7 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:build": "docker-compose build",
-    "prepare": "husky install"
+    "prepare": "node -e \"try { require('husky').install() } catch (e) {}\""
   },
   "keywords": [
     "real-estate",
