@@ -1,6 +1,6 @@
 # Sprint 3 - MVP with Database and Payments
 
-**Deployed Application:** https://realsync-web-6y7a-git-dev-ialonsoas-projects.vercel.app
+**Deployed Application:** https://realsync-web-6y7a-git-dev-ialonsoas-projects.vercel.app/login
 
 ---
 
