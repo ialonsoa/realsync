@@ -1,0 +1,10 @@
+# Ignore root node_modules and other unnecessary files
+/node_modules
+/backend
+/.git
+/.github
+/infrastructure
+/scripts
+/docs
+
+# Only build frontend/web
