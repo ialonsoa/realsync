@@ -146,20 +146,42 @@ export default function EstimatorPage() {
             <button
               type="submit"
               disabled={isSaving}
-              className="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+              className="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 transition-all"
             >
               <CalculatorIcon className="h-5 w-5 mr-2" />
               {isSaving ? 'Guardando...' : 'Calcular Impuestos'}
             </button>
+
+            {/* Success Message */}
             {saveSuccess && (
-              <p className="text-sm text-success-600 text-center mt-2">
-                ✓ Cálculo guardado exitosamente
-              </p>
+              <div className="mt-3 p-3 bg-success-50 border border-success-200 rounded-lg flex items-center animate-fadeIn">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-success-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-success-800">
+                    Cálculo guardado exitosamente en tu cuenta
+                  </p>
+                </div>
+              </div>
             )}
+
+            {/* Error Message */}
             {saveError && (
-              <p className="text-sm text-red-600 text-center mt-2">
-                ✗ Error: {saveError}
-              </p>
+              <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-red-800">
+                    Error: {saveError}
+                  </p>
+                </div>
+              </div>
             )}
           </form>
 

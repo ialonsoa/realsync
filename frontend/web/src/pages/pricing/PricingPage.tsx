@@ -154,6 +154,7 @@ export default function PricingPage() {
               </div>
 
               <button
+                data-plan={plan.tier}
                 onClick={() => handleSubscribe(plan)}
                 disabled={plan.disabled || isLoading}
                 className={`mt-8 w-full py-3 px-4 rounded-md text-sm font-medium transition-colors ${
@@ -180,32 +181,176 @@ export default function PricingPage() {
         ))}
       </div>
 
-      {/* Current Subscription Info */}
+      {/* Feature Comparison Table */}
+      <div className="mt-16">
+        <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">
+          Comparación Detallada de Planes
+        </h2>
+        <div className="overflow-hidden shadow ring-1 ring-gray-200 rounded-lg">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="py-3.5 pl-6 pr-3 text-left text-sm font-semibold text-gray-900">
+                  Característica
+                </th>
+                <th scope="col" className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">
+                  Free
+                </th>
+                <th scope="col" className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 bg-primary-50">
+                  Pro
+                </th>
+                <th scope="col" className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">
+                  Enterprise
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white">
+              <tr>
+                <td className="whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-gray-900">
+                  Propiedades Activas
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-700 text-center">1</td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-700 text-center bg-primary-50">Ilimitadas</td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-700 text-center">Ilimitadas</td>
+              </tr>
+              <tr>
+                <td className="whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-gray-900">
+                  Estimador de Impuestos
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <CheckIcon className="h-5 w-5 text-primary-600 mx-auto" />
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center bg-primary-50">
+                  <CheckIcon className="h-5 w-5 text-primary-600 mx-auto" />
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <CheckIcon className="h-5 w-5 text-primary-600 mx-auto" />
+                </td>
+              </tr>
+              <tr>
+                <td className="whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-gray-900">
+                  Chat en Tiempo Real
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <span className="text-gray-400">—</span>
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center bg-primary-50">
+                  <CheckIcon className="h-5 w-5 text-primary-600 mx-auto" />
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <CheckIcon className="h-5 w-5 text-primary-600 mx-auto" />
+                </td>
+              </tr>
+              <tr>
+                <td className="whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-gray-900">
+                  Analíticas Avanzadas
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <span className="text-gray-400">—</span>
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center bg-primary-50">
+                  <CheckIcon className="h-5 w-5 text-primary-600 mx-auto" />
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <CheckIcon className="h-5 w-5 text-primary-600 mx-auto" />
+                </td>
+              </tr>
+              <tr>
+                <td className="whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-gray-900">
+                  Almacenamiento Documentos
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-700 text-center">—</td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-700 text-center bg-primary-50">10GB</td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-700 text-center">Ilimitado</td>
+              </tr>
+              <tr>
+                <td className="whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-gray-900">
+                  Integración WhatsApp
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <span className="text-gray-400">—</span>
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center bg-primary-50">
+                  <CheckIcon className="h-5 w-5 text-primary-600 mx-auto" />
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <CheckIcon className="h-5 w-5 text-primary-600 mx-auto" />
+                </td>
+              </tr>
+              <tr>
+                <td className="whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-gray-900">
+                  Múltiples Usuarios
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <span className="text-gray-400">—</span>
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center bg-primary-50">
+                  <span className="text-gray-400">—</span>
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <CheckIcon className="h-5 w-5 text-primary-600 mx-auto" />
+                </td>
+              </tr>
+              <tr>
+                <td className="whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-gray-900">
+                  API Access
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <span className="text-gray-400">—</span>
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center bg-primary-50">
+                  <span className="text-gray-400">—</span>
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-center">
+                  <CheckIcon className="h-5 w-5 text-primary-600 mx-auto" />
+                </td>
+              </tr>
+              <tr>
+                <td className="whitespace-nowrap py-4 pl-6 pr-3 text-sm font-medium text-gray-900">
+                  Soporte
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-700 text-center">Email</td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-700 text-center bg-primary-50">24/7 Prioritario</td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-700 text-center">Account Manager</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Current Subscription Info - Compact Version */}
       {user && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="text-lg font-medium text-blue-900">Tu suscripción actual</h3>
-          <p className="mt-2 text-sm text-blue-800">
-            Plan: <strong>{user.subscription_tier === 'pro' ? 'Pro' : 'Free'}</strong>
-          </p>
-          <p className="mt-1 text-sm text-blue-800">
-            Estado: <strong>{user.subscription_status === 'active' ? 'Activa' : 'Inactiva'}</strong>
-          </p>
+        <div className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-primary-50 border border-blue-200 rounded-lg p-4">
+          <div>
+            <h3 className="text-sm font-medium text-gray-900">Tu suscripción actual</h3>
+            <p className="mt-1 text-sm text-gray-600">
+              <strong className="text-primary-600">{user.subscription_tier === 'pro' ? 'Plan Pro' : 'Plan Free'}</strong> · {user.subscription_status === 'active' ? 'Activa' : 'Inactiva'}
+            </p>
+          </div>
+          {user.subscription_tier === 'free' && (
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                const proButton = document.querySelector('[data-plan="pro"]') as HTMLButtonElement;
+                proButton?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }}
+              className="text-sm font-medium text-primary-600 hover:text-primary-700"
+            >
+              Ver planes →
+            </a>
+          )}
         </div>
       )}
 
-      {/* Demo Notice */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-        <h3 className="text-sm font-medium text-yellow-900">📝 Modo Demo - Sprint 3</h3>
-        <p className="mt-2 text-sm text-yellow-800">
-          Esta es una implementación de demostración de Stripe para Sprint 3.
-          Los botones muestran el flujo de integración. En producción:
+      {/* Demo Notice - Minimized */}
+      <div className="border-t border-gray-200 pt-6">
+        <p className="text-xs text-gray-500 text-center">
+          🚀 Sprint 3: Stripe SDK integrado y listo para producción.
+          <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-700 ml-1">
+            Powered by Stripe
+          </a>
         </p>
-        <ul className="mt-2 ml-4 text-sm text-yellow-800 list-disc space-y-1">
-          <li>Se crearía una sesión de Checkout en el backend</li>
-          <li>Se redirigiría a Stripe Checkout hosteado</li>
-          <li>Se procesarían webhooks para actualizar suscripciones</li>
-          <li>Se actualizaría automáticamente el tier del usuario en Supabase</li>
-        </ul>
       </div>
     </div>
   );
