@@ -1,8 +1,44 @@
 import { HomeIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 export default function AgentDashboard() {
-  // Demo mode: No backend available yet
-  const properties = null;
+  // Demo mode: Mock properties data
+  const properties = [
+    {
+      id: '1',
+      address: 'Av. Conquistadores 456, San Isidro',
+      city: 'Lima',
+      asking_price: 450000,
+      status: 'ACTIVE',
+    },
+    {
+      id: '2',
+      address: 'Calle Los Tulipanes 123, Miraflores',
+      city: 'Lima',
+      asking_price: 680000,
+      status: 'ACTIVE',
+    },
+    {
+      id: '3',
+      address: 'Jr. Las Orquídeas 789, La Molina',
+      city: 'Lima',
+      asking_price: 520000,
+      status: 'SOLD',
+    },
+    {
+      id: '4',
+      address: 'Av. Arequipa 2341, Lince',
+      city: 'Lima',
+      asking_price: 320000,
+      status: 'ACTIVE',
+    },
+    {
+      id: '5',
+      address: 'Malecón Cisneros 567, Miraflores',
+      city: 'Lima',
+      asking_price: 890000,
+      status: 'ACTIVE',
+    },
+  ];
   const isLoading = false;
 
   if (isLoading) {

@@ -1,9 +1,8 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/auth';
 
 // Pages
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import PropertyDetailsPage from './pages/properties/PropertyDetailsPage';
 import TimelinePage from './pages/timeline/TimelinePage';
@@ -13,40 +12,50 @@ import ChatPage from './pages/chat/ChatPage';
 import AnalyticsPage from './pages/analytics/AnalyticsPage';
 
 // Components
-import ProtectedRoute from './components/auth/ProtectedRoute';
 import Layout from './components/layout/Layout';
 
 function App() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, setAuth } = useAuthStore();
+
+  // Demo mode: Auto-login with mock user on first load
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      const mockUser = {
+        id: 'demo-user-1',
+        email: 'demo@realsync.pe',
+        first_name: 'Demo',
+        last_name: 'Usuario',
+        role: 'AGENT' as const,
+        phone: '+51 999 888 777',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      setAuth(mockUser, 'demo-token', 'demo-refresh-token');
+    }
+  }, [isAuthenticated, setAuth]);
 
   return (
     <Router>
       <Routes>
-        {/* Public routes */}
+        {/* Public routes - Hidden in demo mode */}
         <Route
           path="/login"
-          element={
-            isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />
-          }
+          element={<Navigate to="/dashboard" replace />}
         />
         <Route
           path="/register"
-          element={
-            isAuthenticated ? <Navigate to="/dashboard" /> : <RegisterPage />
-          }
+          element={<Navigate to="/dashboard" replace />}
         />
 
-        {/* Protected routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<Layout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/properties/:id" element={<PropertyDetailsPage />} />
-            <Route path="/transactions/:id/timeline" element={<TimelinePage />} />
-            <Route path="/transactions/:id/documents" element={<DocumentsPage />} />
-            <Route path="/transactions/:id/chat" element={<ChatPage />} />
-            <Route path="/estimator" element={<EstimatorPage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} />
-          </Route>
+        {/* Main routes - Always accessible in demo mode */}
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/properties/:id" element={<PropertyDetailsPage />} />
+          <Route path="/transactions/:id/timeline" element={<TimelinePage />} />
+          <Route path="/transactions/:id/documents" element={<DocumentsPage />} />
+          <Route path="/transactions/:id/chat" element={<ChatPage />} />
+          <Route path="/estimator" element={<EstimatorPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
         </Route>
 
         {/* Redirect root to dashboard */}
