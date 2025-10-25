@@ -50,12 +50,16 @@ function App() {
         {/* Main routes - Always accessible in demo mode */}
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/properties/:id" element={<PropertyDetailsPage />} />
-          <Route path="/transactions/:id/timeline" element={<TimelinePage />} />
-          <Route path="/transactions/:id/documents" element={<DocumentsPage />} />
-          <Route path="/transactions/:id/chat" element={<ChatPage />} />
+          <Route path="/timeline" element={<TimelinePage />} />
+          <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/chat" element={<ChatPage />} />
           <Route path="/estimator" element={<EstimatorPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
+          {/* Legacy routes with parameters (redirect to simple routes) */}
+          <Route path="/properties/:id" element={<PropertyDetailsPage />} />
+          <Route path="/transactions/:id/timeline" element={<Navigate to="/timeline" replace />} />
+          <Route path="/transactions/:id/documents" element={<Navigate to="/documents" replace />} />
+          <Route path="/transactions/:id/chat" element={<Navigate to="/chat" replace />} />
         </Route>
 
         {/* Redirect root to dashboard */}
