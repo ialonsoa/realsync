@@ -12,8 +12,8 @@ export default function PricingPage() {
   const plans = [
     {
       name: 'Free',
-      price: 'S/ 0',
-      period: 'mes',
+      price: '$0',
+      period: 'month',
       description: 'Perfecto para empezar',
       features: [
         '1 propiedad activa',
@@ -27,8 +27,8 @@ export default function PricingPage() {
     },
     {
       name: 'Pro',
-      price: 'S/ 99',
-      period: 'mes',
+      price: '$29',
+      period: 'month',
       description: 'Para agentes profesionales',
       features: [
         'Propiedades ilimitadas',
@@ -43,7 +43,7 @@ export default function PricingPage() {
       cta: 'Actualizar a Pro',
       highlighted: true,
       tier: 'pro',
-      stripePriceId: 'price_demo', // In production, this would be a real Stripe Price ID
+      stripePriceId: import.meta.env.VITE_STRIPE_PRO_PRICE_ID || 'price_1SM0VT1CenAuKyiUxH348mnP', // Real Stripe Price ID
     },
     {
       name: 'Enterprise',
@@ -65,53 +65,54 @@ export default function PricingPage() {
   ];
 
   const handleSubscribe = async (plan: typeof plans[0]) => {
-    if (plan.tier === 'free' || plan.tier === 'enterprise') return;
+    if (plan.tier === 'free' || plan.tier === 'enterprise') {
+      if (plan.tier === 'enterprise') {
+        alert('Por favor contacta a ventas@realsync.com para planes Enterprise');
+      }
+      return;
+    }
+
+    if (!user?.id) {
+      alert('Por favor inicia sesión para suscribirte');
+      return;
+    }
 
     setIsLoading(true);
 
     try {
-      // In a real implementation, you would:
-      // 1. Call your backend to create a Stripe Checkout Session
-      // 2. Redirect to Stripe Checkout
-      // 3. Handle the webhook to update user subscription
-
-      // For demo purposes, we'll simulate the flow
-      alert(`
-        🚀 Demo Mode - Stripe Checkout
-
-        En producción, esto abriría Stripe Checkout para:
-        - Plan: ${plan.name}
-        - Precio: ${plan.price}/${plan.period}
-
-        El flujo completo incluiría:
-        1. Crear Checkout Session en backend
-        2. Redirigir a Stripe Checkout
-        3. Procesar pago
-        4. Actualizar suscripción vía webhook
-        5. Actualizar tier del usuario en Supabase
-
-        ✅ Para Sprint 3: Stripe está integrado y listo para usar
-      `);
-
-      // Example of how you'd redirect to Stripe Checkout:
-      /*
+      // Call backend API to create Stripe Checkout Session
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           priceId: plan.stripePriceId,
-          userId: user?.id,
+          userId: user.id,
         }),
       });
 
-      const { sessionId } = await response.json();
-      const stripe = await stripePromise;
-      await stripe?.redirectToCheckout({ sessionId });
-      */
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error creating checkout session');
+      }
 
-    } catch (error) {
+      const { sessionId } = await response.json();
+
+      // Redirect to Stripe Checkout
+      const stripe = await stripePromise;
+
+      if (!stripe) {
+        throw new Error('Stripe failed to load');
+      }
+
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+
+      if (error) {
+        throw error;
+      }
+
+    } catch (error: any) {
       console.error('Error:', error);
-      alert('Error al procesar la suscripción');
+      alert('Error al procesar la suscripción: ' + error.message);
     } finally {
       setIsLoading(false);
     }

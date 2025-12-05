@@ -13,6 +13,8 @@ import EstimatorPage from './pages/estimator/EstimatorPage';
 import ChatPage from './pages/chat/ChatPage';
 import AnalyticsPage from './pages/analytics/AnalyticsPage';
 import PricingPage from './pages/pricing/PricingPage';
+import CreateProfile from './pages/profile/CreateProfile';
+import ManageSubscription from './pages/billing/ManageSubscription';
 
 // Components
 import Layout from './components/layout/Layout';
@@ -50,6 +52,12 @@ function App() {
           element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <RegisterPage />}
         />
 
+        {/* Profile creation - special route */}
+        <Route
+          path="/profile/create"
+          element={isAuthenticated ? <CreateProfile /> : <Navigate to="/login" replace />}
+        />
+
         {/* Protected routes - require authentication */}
         <Route element={isAuthenticated ? <Layout /> : <Navigate to="/login" replace />}>
           <Route path="/dashboard" element={<DashboardPage />} />
@@ -59,6 +67,7 @@ function App() {
           <Route path="/estimator" element={<EstimatorPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/billing" element={<ManageSubscription />} />
           {/* Legacy routes with parameters (redirect to simple routes) */}
           <Route path="/properties/:id" element={<PropertyDetailsPage />} />
           <Route path="/transactions/:id/timeline" element={<Navigate to="/timeline" replace />} />
