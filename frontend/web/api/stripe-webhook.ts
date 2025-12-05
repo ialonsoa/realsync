@@ -5,7 +5,7 @@ import { buffer } from 'micro';
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-11-20.acacia',
+  apiVersion: '2025-11-17.clover',
 });
 
 // Initialize Supabase Admin Client
@@ -133,10 +133,10 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       stripe_price_id: priceId,
       status: subscription.status,
       plan_tier: planTier,
-      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-      cancel_at_period_end: subscription.cancel_at_period_end,
-      canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+      current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
+      current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+      cancel_at_period_end: subscription.cancel_at_period_end || false,
+      canceled_at: (subscription as any).canceled_at ? new Date((subscription as any).canceled_at * 1000).toISOString() : null,
       updated_at: new Date().toISOString(),
     }, {
       onConflict: 'stripe_subscription_id'
@@ -184,7 +184,8 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
 // Handle successful payment
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  if (!invoice.subscription) return;
+  const invoiceSubscription = (invoice as any).subscription;
+  if (!invoiceSubscription) return;
 
   const customerId = invoice.customer as string;
   const userId = await getUserIdFromCustomer(customerId);
@@ -198,8 +199,10 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   const { data: subscription } = await supabaseAdmin
     .from('subscriptions')
     .select('id')
-    .eq('stripe_subscription_id', invoice.subscription as string)
+    .eq('stripe_subscription_id', invoiceSubscription as string)
     .single();
+
+  const paymentIntent = (invoice as any).payment_intent as string;
 
   // Record payment in payment_history
   await supabaseAdmin
@@ -207,20 +210,21 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
     .insert({
       user_id: userId,
       subscription_id: subscription?.id || null,
-      stripe_payment_intent_id: invoice.payment_intent as string,
-      amount: invoice.amount_paid / 100, // Convert from cents
+      stripe_payment_intent_id: paymentIntent,
+      amount: (invoice as any).amount_paid / 100, // Convert from cents
       currency: invoice.currency.toUpperCase(),
       status: 'succeeded',
-      payment_method: invoice.payment_intent ? 'card' : 'unknown',
-      receipt_url: invoice.hosted_invoice_url,
+      payment_method: paymentIntent ? 'card' : 'unknown',
+      receipt_url: (invoice as any).hosted_invoice_url,
     });
 
-  console.log(`Payment succeeded for user ${userId}, amount: ${invoice.amount_paid / 100}`);
+  console.log(`Payment succeeded for user ${userId}, amount: ${(invoice as any).amount_paid / 100}`);
 }
 
 // Handle failed payment
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  if (!invoice.subscription) return;
+  const invoiceSubscription = (invoice as any).subscription;
+  if (!invoiceSubscription) return;
 
   const customerId = invoice.customer as string;
   const userId = await getUserIdFromCustomer(customerId);
