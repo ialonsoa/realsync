@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-11-20.acacia',
+  apiVersion: '2025-11-17.clover',
 });
 
 // Initialize Supabase Admin Client
@@ -57,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({
       success: true,
       message: 'Subscription will be canceled at the end of the billing period',
-      cancelAt: new Date(canceledSubscription.current_period_end * 1000).toISOString(),
+      cancelAt: new Date((canceledSubscription as any).current_period_end * 1000).toISOString(),
     });
 
   } catch (error: any) {
