@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { CheckIcon } from '@heroicons/react/24/outline';
-import { loadStripe } from '@stripe/stripe-js';
 import { useAuthStore } from '@/store/auth';
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 export default function PricingPage() {
   const [isLoading, setIsLoading] = useState(false);
