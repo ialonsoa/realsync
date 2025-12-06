@@ -14,6 +14,9 @@ import ChatPage from './pages/chat/ChatPage';
 import AnalyticsPage from './pages/analytics/AnalyticsPage';
 import PricingPage from './pages/pricing/PricingPage';
 import CreateProfile from './pages/profile/CreateProfile';
+import ViewProfile from './pages/profile/ViewProfile';
+import EditProfile from './pages/profile/EditProfile';
+import PrivacySettings from './pages/profile/PrivacySettings';
 import ManageSubscription from './pages/billing/ManageSubscription';
 
 // Components
@@ -68,6 +71,10 @@ function App() {
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/billing" element={<ManageSubscription />} />
+          {/* Profile routes */}
+          <Route path="/profile" element={<ViewProfile />} />
+          <Route path="/profile/edit" element={<EditProfile />} />
+          <Route path="/profile/privacy" element={<PrivacySettings />} />
           {/* Legacy routes with parameters (redirect to simple routes) */}
           <Route path="/properties/:id" element={<PropertyDetailsPage />} />
           <Route path="/transactions/:id/timeline" element={<Navigate to="/timeline" replace />} />
