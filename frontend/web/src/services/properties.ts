@@ -60,30 +60,30 @@ export const propertiesService = {
       throw new Error('User not authenticated');
     }
 
-    const propertyData = {
+    const propertyData: any = {
       agent_id: user.id,
       address: input.address,
-      district: input.district || null,
       city: input.city,
-      region: input.region || null,
-      postal_code: input.postal_code || null,
-      latitude: input.latitude || null,
-      longitude: input.longitude || null,
-      property_type: input.property_type || null,
-      area_sqm: input.area_sqm || null,
-      bedrooms: input.bedrooms || null,
-      bathrooms: input.bathrooms || null,
-      parking_spaces: input.parking_spaces || null,
       asking_price: input.asking_price,
       currency: input.currency || 'PEN',
       status: input.status || 'ACTIVE',
-      description: input.description || null,
-      features: input.features || null,
-      images: input.images || null,
-      owner_id: input.owner_id || null,
-      metadata: {},
-      deleted_at: null,
     };
+
+    // Add optional fields only if they have values
+    if (input.district) propertyData.district = input.district;
+    if (input.region) propertyData.region = input.region;
+    if (input.postal_code) propertyData.postal_code = input.postal_code;
+    if (input.latitude !== undefined) propertyData.latitude = input.latitude;
+    if (input.longitude !== undefined) propertyData.longitude = input.longitude;
+    if (input.property_type) propertyData.property_type = input.property_type;
+    if (input.area_sqm !== undefined) propertyData.area_sqm = input.area_sqm;
+    if (input.bedrooms !== undefined) propertyData.bedrooms = input.bedrooms;
+    if (input.bathrooms !== undefined) propertyData.bathrooms = input.bathrooms;
+    if (input.parking_spaces !== undefined) propertyData.parking_spaces = input.parking_spaces;
+    if (input.description) propertyData.description = input.description;
+    if (input.features && input.features.length > 0) propertyData.features = input.features;
+    if (input.images && input.images.length > 0) propertyData.images = input.images;
+    if (input.owner_id) propertyData.owner_id = input.owner_id;
 
     const { data, error } = await supabase
       .from('properties')

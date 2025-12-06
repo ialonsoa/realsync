@@ -12,11 +12,14 @@ export default function CreatePropertyPage() {
   const handleSubmit = async (data: CreatePropertyInput) => {
     try {
       setIsLoading(true);
+      console.log('Creating property with data:', data);
       const newProperty = await propertiesService.createProperty(data);
+      console.log('Property created successfully:', newProperty);
       navigate(`/properties/${newProperty.id}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating property:', error);
-      alert('Error al crear la propiedad. Por favor intenta de nuevo.');
+      const errorMessage = error?.message || error?.error_description || 'Error desconocido';
+      alert(`Error al crear la propiedad: ${errorMessage}\n\nRevisa la consola para más detalles.`);
     } finally {
       setIsLoading(false);
     }
