@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Property, PropertyType, PropertyStatus, CreatePropertyInput } from '../../types/property';
+import ImageUpload from './ImageUpload';
 
 interface PropertyFormProps {
   property?: Property;
@@ -29,6 +30,7 @@ export default function PropertyForm({
     currency: property?.currency || 'PEN',
     status: property?.status || 'ACTIVE',
     description: property?.description || '',
+    images: property?.images || [],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -324,18 +326,27 @@ export default function PropertyForm({
       {/* Additional Information */}
       <div className="bg-white shadow rounded-lg p-6">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Información Adicional</h2>
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Descripción
-          </label>
-          <textarea
-            name="description"
-            id="description"
-            rows={4}
-            value={formData.description}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            placeholder="Describe la propiedad, sus características especiales, ubicación, etc."
+        <div className="space-y-6">
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              Descripción
+            </label>
+            <textarea
+              name="description"
+              id="description"
+              rows={4}
+              value={formData.description}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              placeholder="Describe la propiedad, sus características especiales, ubicación, etc."
+            />
+          </div>
+
+          {/* Image Upload */}
+          <ImageUpload
+            images={formData.images || []}
+            onChange={(images) => setFormData((prev) => ({ ...prev, images }))}
+            maxImages={10}
           />
         </div>
       </div>

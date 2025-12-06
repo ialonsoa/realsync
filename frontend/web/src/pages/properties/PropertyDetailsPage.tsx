@@ -175,14 +175,34 @@ export default function PropertyDetailsPage() {
         </div>
       </div>
 
-      {/* Image Gallery Placeholder */}
+      {/* Image Gallery */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="bg-gray-200 h-96 flex items-center justify-center">
-          <div className="text-center">
-            <HomeIcon className="mx-auto h-24 w-24 text-gray-400" />
-            <p className="mt-2 text-sm text-gray-500">Sin imágenes disponibles</p>
+        {property.images && property.images.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+            <div className="md:col-span-2">
+              <img
+                src={property.images[0]}
+                alt="Main property image"
+                className="w-full h-96 object-cover rounded-lg"
+              />
+            </div>
+            {property.images.slice(1).map((image, index) => (
+              <img
+                key={index}
+                src={image}
+                alt={`Property image ${index + 2}`}
+                className="w-full h-48 object-cover rounded-lg"
+              />
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="bg-gray-200 h-96 flex items-center justify-center">
+            <div className="text-center">
+              <HomeIcon className="mx-auto h-24 w-24 text-gray-400" />
+              <p className="mt-2 text-sm text-gray-500">Sin imágenes disponibles</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

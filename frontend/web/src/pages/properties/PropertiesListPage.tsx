@@ -179,10 +179,18 @@ export default function PropertiesListPage() {
               to={`/properties/${property.id}`}
               className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
             >
-              {/* Property Image Placeholder */}
-              <div className="bg-gray-200 h-48 flex items-center justify-center">
-                <HomeIcon className="h-16 w-16 text-gray-400" />
-              </div>
+              {/* Property Image */}
+              {property.images && property.images.length > 0 ? (
+                <img
+                  src={property.images[0]}
+                  alt={property.address}
+                  className="w-full h-48 object-cover"
+                />
+              ) : (
+                <div className="bg-gray-200 h-48 flex items-center justify-center">
+                  <HomeIcon className="h-16 w-16 text-gray-400" />
+                </div>
+              )}
 
               {/* Property Details */}
               <div className="p-4">
