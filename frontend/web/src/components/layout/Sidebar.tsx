@@ -7,6 +7,7 @@ import {
   CalculatorIcon,
   ClockIcon,
   SparklesIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/store/auth';
 
@@ -23,6 +24,7 @@ export default function Sidebar() {
   ];
 
   const bottomNavigation = [
+    { name: 'Mi Perfil', href: '/profile', icon: UserCircleIcon, highlight: false },
     { name: 'Planes y Precios', href: '/pricing', icon: SparklesIcon, highlight: true },
   ];
 
@@ -87,7 +89,7 @@ export default function Sidebar() {
           </nav>
         </div>
         <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
-          <div className="flex items-center">
+          <NavLink to="/profile" className="flex items-center w-full hover:bg-gray-50 rounded-md p-2 -m-2 transition-colors">
             <div className="flex-shrink-0">
               <div className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-semibold">
                 {user?.first_name?.[0]}{user?.last_name?.[0]}
@@ -99,7 +101,7 @@ export default function Sidebar() {
               </p>
               <p className="text-xs text-gray-500">{user?.role}</p>
             </div>
-          </div>
+          </NavLink>
         </div>
       </div>
     </div>
