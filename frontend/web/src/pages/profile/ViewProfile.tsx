@@ -50,18 +50,28 @@ export default function ViewProfile() {
       // Get complete profile
       const completeProfile = await getCompleteProfile(user!.id);
 
-      if (completeProfile.userProfile) {
-        setProfile(completeProfile.userProfile);
+      if (completeProfile) {
+        setProfile(completeProfile);
       }
 
       // Get role profiles
       const roleProfiles = await getUserRoleProfiles(user!.id);
       setRoles(roleProfiles);
 
-      // Set role-specific profiles
-      setAgentProfile(completeProfile.agentProfile || null);
-      setBuyerProfile(completeProfile.buyerProfile || null);
-      setOwnerProfile(completeProfile.ownerProfile || null);
+      // Set role-specific profiles from roleProfiles array
+      if (completeProfile?.roleProfiles) {
+        for (const roleProfile of completeProfile.roleProfiles) {
+          if (roleProfile.role_type === 'AGENT' && (roleProfile as any).agentProfile) {
+            setAgentProfile((roleProfile as any).agentProfile);
+          }
+          if (roleProfile.role_type === 'BUYER' && (roleProfile as any).buyerProfile) {
+            setBuyerProfile((roleProfile as any).buyerProfile);
+          }
+          if (roleProfile.role_type === 'OWNER' && (roleProfile as any).ownerProfile) {
+            setOwnerProfile((roleProfile as any).ownerProfile);
+          }
+        }
+      }
 
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -269,11 +279,11 @@ export default function ViewProfile() {
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Años de experiencia</dt>
-              <dd className="mt-1 text-sm text-gray-900">{agentProfile.years_of_experience || 'No especificado'}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{agentProfile.years_experience || 'No especificado'}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Agencia</dt>
-              <dd className="mt-1 text-sm text-gray-900">{agentProfile.agency_name || 'Independiente'}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{agentProfile.brokerage_name || 'Independiente'}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Regiones</dt>
@@ -281,16 +291,16 @@ export default function ViewProfile() {
                 {agentProfile.service_regions?.join(', ') || 'No especificado'}
               </dd>
             </div>
-            {agentProfile.specialties && agentProfile.specialties.length > 0 && (
+            {agentProfile.expertise_areas && agentProfile.expertise_areas.length > 0 && (
               <div className="md:col-span-2">
-                <dt className="text-sm font-medium text-gray-500">Especialidades</dt>
+                <dt className="text-sm font-medium text-gray-500">Áreas de Experiencia</dt>
                 <dd className="mt-2 flex flex-wrap gap-2">
-                  {agentProfile.specialties.map((specialty, idx) => (
+                  {agentProfile.expertise_areas.map((area: string, idx: number) => (
                     <span
                       key={idx}
                       className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
                     >
-                      {specialty}
+                      {area}
                     </span>
                   ))}
                 </dd>
@@ -316,7 +326,7 @@ export default function ViewProfile() {
             <div>
               <dt className="text-sm font-medium text-gray-500">Tipo de propiedad</dt>
               <dd className="mt-1 text-sm text-gray-900">
-                {buyerProfile.preferred_property_types?.join(', ') || 'No especificado'}
+                {buyerProfile.property_types_interested?.join(', ') || 'No especificado'}
               </dd>
             </div>
             <div>
@@ -347,10 +357,8 @@ export default function ViewProfile() {
               <dd className="mt-1 text-sm text-gray-900">{ownerProfile.selling_timeline || 'No especificado'}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Dispuesto a negociar</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {ownerProfile.open_to_negotiation ? 'Sí' : 'No'}
-              </dd>
+              <dt className="text-sm font-medium text-gray-500">Método de contacto preferido</dt>
+              <dd className="mt-1 text-sm text-gray-900">{ownerProfile.preferred_contact_method || 'No especificado'}</dd>
             </div>
           </dl>
         </div>

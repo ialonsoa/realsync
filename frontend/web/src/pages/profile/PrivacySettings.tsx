@@ -268,14 +268,14 @@ export default function PrivacySettings() {
               </div>
             </div>
             <button
-              onClick={() => updateSetting('show_activity', !settings.show_activity)}
+              onClick={() => updateSetting('activity_visibility', !settings.activity_visibility)}
               className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                settings.show_activity ? 'bg-primary-600' : 'bg-gray-200'
+                settings.activity_visibility ? 'bg-primary-600' : 'bg-gray-200'
               }`}
             >
               <span
                 className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  settings.show_activity ? 'translate-x-5' : 'translate-x-0'
+                  settings.activity_visibility ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
             </button>
@@ -293,14 +293,14 @@ export default function PrivacySettings() {
               </div>
             </div>
             <button
-              onClick={() => updateSetting('show_in_search', !settings.show_in_search)}
+              onClick={() => updateSetting('show_on_search', !settings.show_on_search)}
               className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                settings.show_in_search ? 'bg-primary-600' : 'bg-gray-200'
+                settings.show_on_search ? 'bg-primary-600' : 'bg-gray-200'
               }`}
             >
               <span
                 className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  settings.show_in_search ? 'translate-x-5' : 'translate-x-0'
+                  settings.show_on_search ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
             </button>
