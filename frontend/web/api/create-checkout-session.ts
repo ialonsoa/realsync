@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Get user profile from Supabase
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
-      .select('stripe_customer_id, first_name, last_name')
+      .select('stripe_customer_id, full_name')
       .eq('id', userId)
       .single();
 
@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
-        name: `${profile.first_name} ${profile.last_name}`,
+        name: profile.full_name || user.email,
         metadata: {
           supabase_user_id: userId,
         },

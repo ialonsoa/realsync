@@ -92,12 +92,12 @@ export default function Sidebar() {
           <NavLink to="/profile" className="flex items-center w-full hover:bg-gray-50 rounded-md p-2 -m-2 transition-colors">
             <div className="flex-shrink-0">
               <div className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-semibold">
-                {user?.first_name?.[0]}{user?.last_name?.[0]}
+                {user?.full_name?.[0] || user?.email?.[0]?.toUpperCase()}
               </div>
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-700">
-                {user?.first_name} {user?.last_name}
+                {user?.full_name || user?.email}
               </p>
               <p className="text-xs text-gray-500">{user?.role}</p>
             </div>

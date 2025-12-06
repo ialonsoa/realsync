@@ -4,8 +4,7 @@ import { supabase } from '@/lib/supabase';
 interface UserProfile {
   id: string;
   email: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
   role: 'OWNER' | 'BUYER' | 'AGENT';
   phone?: string;
   subscription_tier: 'free' | 'pro';
@@ -68,8 +67,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           user: {
             id: profile.id,
             email: session.user.email!,
-            first_name: profile.first_name,
-            last_name: profile.last_name,
+            full_name: profile.full_name || 'User Name',
             role: profile.role,
             phone: profile.phone,
             subscription_tier: profile.subscription_tier,
@@ -100,8 +98,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             user: {
               id: profile.id,
               email: session.user.email!,
-              first_name: profile.first_name,
-              last_name: profile.last_name,
+              full_name: profile.full_name || 'User Name',
               role: profile.role,
               phone: profile.phone,
               subscription_tier: profile.subscription_tier,
