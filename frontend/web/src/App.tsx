@@ -6,7 +6,10 @@ import { useAuthStore } from './store/auth';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
+import PropertiesListPage from './pages/properties/PropertiesListPage';
 import PropertyDetailsPage from './pages/properties/PropertyDetailsPage';
+import CreatePropertyPage from './pages/properties/CreatePropertyPage';
+import EditPropertyPage from './pages/properties/EditPropertyPage';
 import TimelinePage from './pages/timeline/TimelinePage';
 import DocumentsPage from './pages/documents/DocumentsPage';
 import EstimatorPage from './pages/estimator/EstimatorPage';
@@ -75,8 +78,12 @@ function App() {
           <Route path="/profile" element={<ViewProfile />} />
           <Route path="/profile/edit" element={<EditProfile />} />
           <Route path="/profile/privacy" element={<PrivacySettings />} />
-          {/* Legacy routes with parameters (redirect to simple routes) */}
+          {/* Property routes */}
+          <Route path="/properties" element={<PropertiesListPage />} />
+          <Route path="/properties/new" element={<CreatePropertyPage />} />
           <Route path="/properties/:id" element={<PropertyDetailsPage />} />
+          <Route path="/properties/:id/edit" element={<EditPropertyPage />} />
+          {/* Legacy routes with parameters (redirect to simple routes) */}
           <Route path="/transactions/:id/timeline" element={<Navigate to="/timeline" replace />} />
           <Route path="/transactions/:id/documents" element={<Navigate to="/documents" replace />} />
           <Route path="/transactions/:id/chat" element={<Navigate to="/chat" replace />} />

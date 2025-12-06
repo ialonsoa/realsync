@@ -1,45 +1,28 @@
-import { HomeIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { HomeIcon, ClockIcon, CheckCircleIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { propertiesService } from '../../services/properties';
 
 export default function AgentDashboard() {
-  // Demo mode: Mock properties data
-  const properties = [
-    {
-      id: '1',
-      address: 'Av. Conquistadores 456, San Isidro',
-      city: 'Lima',
-      asking_price: 450000,
-      status: 'ACTIVE',
-    },
-    {
-      id: '2',
-      address: 'Calle Los Tulipanes 123, Miraflores',
-      city: 'Lima',
-      asking_price: 680000,
-      status: 'ACTIVE',
-    },
-    {
-      id: '3',
-      address: 'Jr. Las Orquídeas 789, La Molina',
-      city: 'Lima',
-      asking_price: 520000,
-      status: 'SOLD',
-    },
-    {
-      id: '4',
-      address: 'Av. Arequipa 2341, Lince',
-      city: 'Lima',
-      asking_price: 320000,
-      status: 'ACTIVE',
-    },
-    {
-      id: '5',
-      address: 'Malecón Cisneros 567, Miraflores',
-      city: 'Lima',
-      asking_price: 890000,
-      status: 'ACTIVE',
-    },
-  ];
-  const isLoading = false;
+  const [properties, setProperties] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadProperties();
+  }, []);
+
+  const loadProperties = async () => {
+    try {
+      setIsLoading(true);
+      const data = await propertiesService.getProperties();
+      setProperties(data);
+    } catch (err) {
+      console.error('Error loading properties:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -109,15 +92,22 @@ export default function AgentDashboard() {
 
       {/* Properties List */}
       <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-lg font-medium text-gray-900">Propiedades Recientes</h2>
+          <Link
+            to="/properties"
+            className="text-sm font-medium text-primary-600 hover:text-primary-700"
+          >
+            Ver todas
+          </Link>
         </div>
         <div className="divide-y divide-gray-200">
           {properties && properties.length > 0 ? (
             properties.map((property: any) => (
-              <div
+              <Link
                 key={property.id}
-                className="px-6 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                to={`/properties/${property.id}`}
+                className="block px-6 py-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -140,7 +130,7 @@ export default function AgentDashboard() {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))
           ) : (
             <div className="px-6 py-12 text-center">
@@ -152,9 +142,13 @@ export default function AgentDashboard() {
                 Comienza creando tu primera propiedad
               </p>
               <div className="mt-6">
-                <button className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                <Link
+                  to="/properties/new"
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                >
+                  <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
                   Nueva Propiedad
-                </button>
+                </Link>
               </div>
             </div>
           )}
