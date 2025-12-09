@@ -1,109 +1,169 @@
-import { DocumentTextIcon, CheckCircleIcon, ClockIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
+import {
+  DocumentTextIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  XCircleIcon,
+  ArrowDownTrayIcon,
+  TrashIcon,
+  ArrowUpTrayIcon,
+} from '@heroicons/react/24/outline';
+import {
+  getUserDocuments,
+  uploadDocument,
+  downloadDocument,
+  deleteDocument,
+  getDocumentStats,
+} from '../../services/documents';
+import type { DocumentWithUrl, CreateDocumentData, DocumentStats } from '../../types/document';
+import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE, formatFileSize } from '../../types/document';
 
 export default function DocumentsPage() {
-  const documents = [
-    {
-      id: '1',
-      name: 'Título de Propiedad',
-      description: 'Partida registral actualizada de Sunarp',
-      type: 'Legal',
-      uploadedBy: 'Demo Usuario',
-      uploadDate: '2024-01-15',
-      status: 'verified',
-      size: '2.4 MB',
-      format: 'PDF',
-    },
-    {
-      id: '2',
-      name: 'Certificado de Gravámenes',
-      description: 'Certificado de libertad de gravámenes',
-      type: 'Legal',
-      uploadedBy: 'Demo Usuario',
-      uploadDate: '2024-01-15',
-      status: 'verified',
-      size: '1.1 MB',
-      format: 'PDF',
-    },
-    {
-      id: '3',
-      name: 'Planos de Distribución',
-      description: 'Planos arquitectónicos aprobados por municipalidad',
-      type: 'Técnico',
-      uploadedBy: 'Demo Usuario',
-      uploadDate: '2024-01-16',
-      status: 'verified',
-      size: '5.8 MB',
-      format: 'PDF',
-    },
-    {
-      id: '4',
-      name: 'Recibos de Luz - 3 meses',
-      description: 'Últimos 3 recibos de servicio eléctrico',
-      type: 'Servicios',
-      uploadedBy: 'Propietario',
-      uploadDate: '2024-01-17',
-      status: 'verified',
-      size: '890 KB',
-      format: 'PDF',
-    },
-    {
-      id: '5',
-      name: 'Recibos de Agua - 3 meses',
-      description: 'Últimos 3 recibos de servicio de agua',
-      type: 'Servicios',
-      uploadedBy: 'Propietario',
-      uploadDate: '2024-01-17',
-      status: 'verified',
-      size: '750 KB',
-      format: 'PDF',
-    },
-    {
-      id: '6',
-      name: 'DNI del Propietario',
-      description: 'Documento de identidad del vendedor',
-      type: 'Identificación',
-      uploadedBy: 'Propietario',
-      uploadDate: '2024-01-18',
-      status: 'verified',
-      size: '320 KB',
-      format: 'PDF',
-    },
-    {
-      id: '7',
-      name: 'Contrato de Arras',
-      description: 'Contrato de reserva - Oferta S/ 445,000',
-      type: 'Contractual',
-      uploadedBy: 'Demo Usuario',
-      uploadDate: '2024-01-22',
-      status: 'pending',
-      size: '1.5 MB',
-      format: 'PDF',
-    },
-    {
-      id: '8',
-      name: 'Informe de Tasación',
-      description: 'Tasación comercial de la propiedad',
-      type: 'Valuación',
-      uploadedBy: 'Sistema',
-      uploadDate: '2024-01-20',
-      status: 'review',
-      size: '3.2 MB',
-      format: 'PDF',
-    },
-  ];
+  const [documents, setDocuments] = useState<DocumentWithUrl[]>([]);
+  const [stats, setStats] = useState<DocumentStats>({
+    total: 0,
+    verified: 0,
+    pending: 0,
+    rejected: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
+
+  // Load documents on mount
+  useEffect(() => {
+    loadDocuments();
+  }, [selectedProperty]);
+
+  const loadDocuments = async () => {
+    try {
+      setLoading(true);
+      const [docs, docStats] = await Promise.all([
+        getUserDocuments(selectedProperty),
+        getDocumentStats(selectedProperty),
+      ]);
+      setDocuments(docs);
+      setStats(docStats);
+    } catch (error) {
+      console.error('Error loading documents:', error);
+      toast.error('Error al cargar documentos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+
+    // Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      toast.error('Tipo de archivo no permitido. Solo PDF, DOC, DOCX, JPG, PNG.');
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(`El archivo es demasiado grande. Máximo ${formatFileSize(MAX_FILE_SIZE)}.`);
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const uploadData: CreateDocumentData = {
+        name: file.name,
+        property_id: selectedProperty,
+        file,
+      };
+
+      await uploadDocument(uploadData);
+      toast.success('Documento subido exitosamente');
+
+      // Reload documents
+      await loadDocuments();
+
+      // Reset file input
+      event.target.value = '';
+    } catch (error: any) {
+      console.error('Error uploading document:', error);
+      toast.error(error.message || 'Error al subir documento');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDownload = async (doc: DocumentWithUrl) => {
+    try {
+      await downloadDocument(doc.id, doc.name);
+      toast.success('Descargando documento...');
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      toast.error('Error al descargar documento');
+    }
+  };
+
+  const handleDelete = async (doc: DocumentWithUrl) => {
+    if (!confirm(`¿Estás seguro de eliminar "${doc.name}"?`)) {
+      return;
+    }
+
+    try {
+      await deleteDocument(doc.id);
+      toast.success('Documento eliminado');
+      await loadDocuments();
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      toast.error('Error al eliminar documento');
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'verified':
+        return {
+          color: 'bg-success-100 text-success-800',
+          icon: CheckCircleIcon,
+          text: 'Verificado',
+        };
+      case 'rejected':
+        return {
+          color: 'bg-red-100 text-red-800',
+          icon: XCircleIcon,
+          text: 'Rechazado',
+        };
+      default:
+        return {
+          color: 'bg-gray-100 text-gray-800',
+          icon: ClockIcon,
+          text: 'Pendiente',
+        };
+    }
+  };
 
   const documentStats = [
-    { name: 'Verificados', count: 6, color: 'text-success-600 bg-success-100' },
-    { name: 'En Revisión', count: 1, color: 'text-warning-600 bg-warning-100' },
-    { name: 'Pendientes', count: 1, color: 'text-gray-600 bg-gray-100' },
+    { name: 'Verificados', count: stats.verified, color: 'text-success-600 bg-success-100' },
+    { name: 'Pendientes', count: stats.pending, color: 'text-gray-600 bg-gray-100' },
+    { name: 'Rechazados', count: stats.rejected, color: 'text-red-600 bg-red-100' },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Documentos</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Gestión de documentos para Av. Conquistadores 456, San Isidro
+          Gestión de documentos para tus transacciones inmobiliarias
         </p>
       </div>
 
@@ -135,92 +195,157 @@ export default function DocumentsPage() {
       {/* Upload Section */}
       <div className="bg-white shadow rounded-lg p-6">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Subir Nuevos Documentos</h2>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary-400 transition-colors cursor-pointer">
-          <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <p className="mt-2 text-sm text-gray-600">
-            <span className="font-medium text-primary-600">Click para subir</span> o arrastra archivos aquí
-          </p>
-          <p className="mt-1 text-xs text-gray-500">PDF, DOC, DOCX hasta 10MB</p>
-        </div>
+        <label
+          htmlFor="file-upload"
+          className={`border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary-400 transition-colors cursor-pointer block ${
+            uploading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          <input
+            id="file-upload"
+            type="file"
+            className="hidden"
+            onChange={handleFileUpload}
+            disabled={uploading}
+            accept={ALLOWED_FILE_TYPES.join(',')}
+          />
+          {uploading ? (
+            <>
+              <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary-600 border-t-transparent"></div>
+              <p className="mt-2 text-sm text-gray-600">Subiendo documento...</p>
+            </>
+          ) : (
+            <>
+              <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <p className="mt-2 text-sm text-gray-600">
+                <span className="font-medium text-primary-600">Click para subir</span> o arrastra
+                archivos aquí
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                PDF, DOC, DOCX, JPG, PNG hasta {formatFileSize(MAX_FILE_SIZE)}
+              </p>
+            </>
+          )}
+        </label>
       </div>
 
       {/* Documents List */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Documentos Subidos</h2>
+          <h2 className="text-lg font-medium text-gray-900">
+            Documentos Subidos ({documents.length})
+          </h2>
         </div>
-        <div className="divide-y divide-gray-200">
-          {documents.map((doc) => (
-            <div
-              key={doc.id}
-              className="px-6 py-4 hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-start space-x-4 flex-1">
-                  <div className="flex-shrink-0">
-                    <DocumentTextIcon className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-sm font-medium text-gray-900">
-                        {doc.name}
-                      </h3>
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          doc.status === 'verified'
-                            ? 'bg-success-100 text-success-800'
-                            : doc.status === 'review'
-                            ? 'bg-warning-100 text-warning-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
+
+        {documents.length === 0 ? (
+          <div className="px-6 py-12 text-center">
+            <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No hay documentos</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Comienza subiendo tu primer documento.
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200">
+            {documents.map((doc) => {
+              const statusBadge = getStatusBadge(doc.status);
+              const StatusIcon = statusBadge.icon;
+
+              return (
+                <div
+                  key={doc.id}
+                  className="px-6 py-4 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-start space-x-4 flex-1">
+                      <div className="flex-shrink-0">
+                        <DocumentTextIcon className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <h3 className="text-sm font-medium text-gray-900">
+                            {doc.name}
+                          </h3>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadge.color}`}
+                          >
+                            <StatusIcon className="h-3 w-3 mr-1" />
+                            {statusBadge.text}
+                          </span>
+                        </div>
+                        {doc.description && (
+                          <p className="text-sm text-gray-500 mt-1">{doc.description}</p>
+                        )}
+                        <div className="flex items-center space-x-4 mt-2 text-xs text-gray-400">
+                          {doc.document_type && <span>Tipo: {doc.document_type}</span>}
+                          {doc.document_type && <span>•</span>}
+                          <span>Subido por: {doc.uploaded_by}</span>
+                          <span>•</span>
+                          <span>
+                            {new Date(doc.created_at).toLocaleDateString('es-PE', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </span>
+                          <span>•</span>
+                          <span>{doc.displaySize}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="ml-4 flex-shrink-0 flex space-x-2">
+                      <button
+                        onClick={() => handleDownload(doc)}
+                        className="p-2 text-gray-400 hover:text-primary-600 transition-colors"
+                        title="Descargar"
                       >
-                        {doc.status === 'verified' && <CheckCircleIcon className="h-3 w-3 mr-1" />}
-                        {doc.status === 'review' && <ClockIcon className="h-3 w-3 mr-1" />}
-                        {doc.status === 'verified' ? 'Verificado' : doc.status === 'review' ? 'En Revisión' : 'Pendiente'}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">{doc.description}</p>
-                    <div className="flex items-center space-x-4 mt-2 text-xs text-gray-400">
-                      <span>Tipo: {doc.type}</span>
-                      <span>•</span>
-                      <span>Subido por: {doc.uploadedBy}</span>
-                      <span>•</span>
-                      <span>{doc.uploadDate}</span>
-                      <span>•</span>
-                      <span>{doc.size}</span>
+                        <ArrowDownTrayIcon className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(doc)}
+                        className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                        title="Eliminar"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                 </div>
-                <div className="ml-4 flex-shrink-0 flex space-x-2">
-                  <button className="p-2 text-gray-400 hover:text-primary-600 transition-colors">
-                    <ArrowDownTrayIcon className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Required Documents Checklist */}
       <div className="bg-warning-50 border border-warning-200 rounded-lg p-6">
-        <h3 className="text-sm font-medium text-warning-900 mb-3">Documentos Requeridos para el Cierre</h3>
+        <h3 className="text-sm font-medium text-warning-900 mb-3">
+          Documentos Requeridos para Transacciones Inmobiliarias
+        </h3>
         <ul className="space-y-2 text-sm text-warning-800">
           <li className="flex items-center">
-            <CheckCircleIcon className="h-4 w-4 text-success-600 mr-2" />
-            <span className="line-through">Título de Propiedad</span>
+            <CheckCircleIcon className="h-4 w-4 text-success-600 mr-2 flex-shrink-0" />
+            <span>Título de Propiedad (Partida Registral SUNARP)</span>
           </li>
           <li className="flex items-center">
-            <CheckCircleIcon className="h-4 w-4 text-success-600 mr-2" />
-            <span className="line-through">Certificado de Gravámenes</span>
+            <CheckCircleIcon className="h-4 w-4 text-success-600 mr-2 flex-shrink-0" />
+            <span>Certificado de Libertad de Gravámenes</span>
           </li>
           <li className="flex items-center">
-            <ClockIcon className="h-4 w-4 text-warning-600 mr-2" />
-            <span>Pre-aprobación de crédito del comprador (Pendiente)</span>
+            <ClockIcon className="h-4 w-4 text-warning-600 mr-2 flex-shrink-0" />
+            <span>Planos de Distribución Aprobados</span>
           </li>
           <li className="flex items-center">
-            <ClockIcon className="h-4 w-4 text-warning-600 mr-2" />
-            <span>Certificado de parámetros urbanísticos (Pendiente)</span>
+            <ClockIcon className="h-4 w-4 text-warning-600 mr-2 flex-shrink-0" />
+            <span>Recibos de Servicios (Luz, Agua - últimos 3 meses)</span>
+          </li>
+          <li className="flex items-center">
+            <ClockIcon className="h-4 w-4 text-warning-600 mr-2 flex-shrink-0" />
+            <span>DNI del Propietario</span>
+          </li>
+          <li className="flex items-center">
+            <ClockIcon className="h-4 w-4 text-warning-600 mr-2 flex-shrink-0" />
+            <span>Certificado de Parámetros Urbanísticos (opcional)</span>
           </li>
         </ul>
       </div>
