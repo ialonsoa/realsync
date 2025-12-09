@@ -8,16 +8,24 @@ import {
   ArrowDownTrayIcon,
   TrashIcon,
   ArrowUpTrayIcon,
+  EyeIcon,
+  PencilSquareIcon,
 } from '@heroicons/react/24/outline';
 import {
   getUserDocuments,
   uploadDocument,
-  downloadDocument,
+  viewDocument,
   deleteDocument,
   getDocumentStats,
 } from '../../services/documents';
+import {
+  createSignature,
+  getDocumentSignatureInfo,
+} from '../../services/signatures';
 import type { DocumentWithUrl, CreateDocumentData, DocumentStats } from '../../types/document';
+import type { SignatureType, SignerRole, DocumentWithSignatures } from '../../types/signature';
 import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE, formatFileSize } from '../../types/document';
+import SignatureModal from '../../components/documents/SignatureModal';
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<DocumentWithUrl[]>([]);
@@ -29,7 +37,12 @@ export default function DocumentsPage() {
   });
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
+  const [selectedProperty] = useState<string | null>(null);
+
+  // Signature state
+  const [signatureModalOpen, setSignatureModalOpen] = useState(false);
+  const [documentToSign, setDocumentToSign] = useState<DocumentWithUrl | null>(null);
+  const [documentSignatures, setDocumentSignatures] = useState<Map<string, DocumentWithSignatures>>(new Map());
 
   // Load documents on mount
   useEffect(() => {
@@ -45,6 +58,18 @@ export default function DocumentsPage() {
       ]);
       setDocuments(docs);
       setStats(docStats);
+
+      // Load signature info for each document
+      const signaturesMap = new Map<string, DocumentWithSignatures>();
+      await Promise.all(
+        docs.map(async (doc) => {
+          const sigInfo = await getDocumentSignatureInfo(doc.id);
+          if (sigInfo) {
+            signaturesMap.set(doc.id, sigInfo);
+          }
+        })
+      );
+      setDocumentSignatures(signaturesMap);
     } catch (error) {
       console.error('Error loading documents:', error);
       toast.error('Error al cargar documentos');
@@ -96,13 +121,46 @@ export default function DocumentsPage() {
     }
   };
 
-  const handleDownload = async (doc: DocumentWithUrl) => {
+  const handleView = async (doc: DocumentWithUrl) => {
     try {
-      await downloadDocument(doc.id, doc.name);
-      toast.success('Descargando documento...');
+      await viewDocument(doc.id);
     } catch (error) {
-      console.error('Error downloading document:', error);
-      toast.error('Error al descargar documento');
+      console.error('Error viewing document:', error);
+      toast.error('Error al abrir documento');
+    }
+  };
+
+  const handleOpenSignModal = (doc: DocumentWithUrl) => {
+    setDocumentToSign(doc);
+    setSignatureModalOpen(true);
+  };
+
+  const handleSign = async (
+    signatureData: string,
+    signatureType: SignatureType,
+    role?: SignerRole
+  ) => {
+    if (!documentToSign) return;
+
+    try {
+      await createSignature({
+        document_id: documentToSign.id,
+        signature_type: signatureType,
+        signature_data: signatureData,
+        signer_role: role,
+      });
+
+      toast.success('Documento firmado exitosamente');
+
+      // Reload documents and signatures
+      await loadDocuments();
+
+      setSignatureModalOpen(false);
+      setDocumentToSign(null);
+    } catch (error: any) {
+      console.error('Error signing document:', error);
+      toast.error(error.message || 'Error al firmar documento');
+      throw error;
     }
   };
 
@@ -250,6 +308,9 @@ export default function DocumentsPage() {
             {documents.map((doc) => {
               const statusBadge = getStatusBadge(doc.status);
               const StatusIcon = statusBadge.icon;
+              const sigInfo = documentSignatures.get(doc.id);
+              const hasSigned = sigInfo?.my_signature !== undefined;
+              const requiresSignature = sigInfo?.requires_my_signature || false;
 
               return (
                 <div
@@ -262,7 +323,7 @@ export default function DocumentsPage() {
                         <DocumentTextIcon className="h-8 w-8 text-gray-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 flex-wrap">
                           <h3 className="text-sm font-medium text-gray-900">
                             {doc.name}
                           </h3>
@@ -272,6 +333,23 @@ export default function DocumentsPage() {
                             <StatusIcon className="h-3 w-3 mr-1" />
                             {statusBadge.text}
                           </span>
+                          {hasSigned && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              <PencilSquareIcon className="h-3 w-3 mr-1" />
+                              Firmado
+                            </span>
+                          )}
+                          {requiresSignature && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 animate-pulse">
+                              <ClockIcon className="h-3 w-3 mr-1" />
+                              Requiere Firma
+                            </span>
+                          )}
+                          {sigInfo && sigInfo.signatures.length > 0 && (
+                            <span className="text-xs text-gray-500">
+                              {sigInfo.signatures.length} firma(s)
+                            </span>
+                          )}
                         </div>
                         {doc.description && (
                           <p className="text-sm text-gray-500 mt-1">{doc.description}</p>
@@ -295,7 +373,27 @@ export default function DocumentsPage() {
                     </div>
                     <div className="ml-4 flex-shrink-0 flex space-x-2">
                       <button
-                        onClick={() => handleDownload(doc)}
+                        onClick={() => handleView(doc)}
+                        className="p-2 text-gray-400 hover:text-primary-600 transition-colors"
+                        title="Ver documento"
+                      >
+                        <EyeIcon className="h-5 w-5" />
+                      </button>
+                      {!hasSigned && (
+                        <button
+                          onClick={() => handleOpenSignModal(doc)}
+                          className={`p-2 transition-colors ${
+                            requiresSignature
+                              ? 'text-yellow-600 hover:text-yellow-700 animate-pulse'
+                              : 'text-gray-400 hover:text-green-600'
+                          }`}
+                          title="Firmar documento"
+                        >
+                          <PencilSquareIcon className="h-5 w-5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleView(doc)}
                         className="p-2 text-gray-400 hover:text-primary-600 transition-colors"
                         title="Descargar"
                       >
@@ -349,6 +447,17 @@ export default function DocumentsPage() {
           </li>
         </ul>
       </div>
+
+      {/* Signature Modal */}
+      <SignatureModal
+        isOpen={signatureModalOpen}
+        onClose={() => {
+          setSignatureModalOpen(false);
+          setDocumentToSign(null);
+        }}
+        onSign={handleSign}
+        documentName={documentToSign?.name || ''}
+      />
     </div>
   );
 }

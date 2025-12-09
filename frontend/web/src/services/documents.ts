@@ -267,6 +267,30 @@ export async function getDocumentDownloadUrl(filePath: string): Promise<string> 
 }
 
 /**
+ * View a document (opens in new tab)
+ */
+export async function viewDocument(documentId: string): Promise<void> {
+  try {
+    const doc = await getDocumentById(documentId);
+    if (!doc) throw new Error('Document not found');
+
+    // Get signed URL for viewing
+    const { data, error } = await supabase.storage
+      .from('documents')
+      .createSignedUrl(doc.file_path, 3600); // Valid for 1 hour
+
+    if (error) throw error;
+    if (!data) throw new Error('Failed to generate view URL');
+
+    // Open in new tab
+    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+  } catch (error) {
+    console.error('Error viewing document:', error);
+    throw error;
+  }
+}
+
+/**
  * Download a document (triggers browser download)
  */
 export async function downloadDocument(
