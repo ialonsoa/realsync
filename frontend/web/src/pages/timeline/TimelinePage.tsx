@@ -11,7 +11,7 @@ import {
   BuildingLibraryIcon,
   KeyIcon,
 } from '@heroicons/react/24/outline';
-import { getPropertyTimelineWithProgress, getUserTimelineEvents } from '../../services/timeline';
+import { getPropertyTimelineWithProgress, getUserTimelineEvents, fixMissingPropertyListedEvents } from '../../services/timeline';
 import { propertiesService } from '../../services/properties';
 import type { TimelineWithProgress, TimelineEvent, TimelineEventType } from '../../types/timeline';
 import { PERU_TRANSACTION_STAGES, STAGE_ORDER } from '../../types/timeline';
@@ -80,6 +80,14 @@ export default function TimelinePage() {
       // Load user's properties
       const props = await propertiesService.getProperties();
       setProperties(props);
+
+      // Fix any missing property_listed timeline events
+      // (This handles properties created before the trigger was installed)
+      const fixResult = await fixMissingPropertyListedEvents();
+      if (fixResult.fixed > 0) {
+        console.log(`Fixed ${fixResult.fixed} missing timeline events:`, fixResult.details);
+        toast.success(`Se crearon ${fixResult.fixed} eventos de publicación faltantes`);
+      }
 
       // Load all timeline events
       const events = await getUserTimelineEvents();

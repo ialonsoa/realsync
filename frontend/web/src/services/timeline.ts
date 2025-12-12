@@ -479,3 +479,97 @@ export async function getTimelineStats() {
     };
   }
 }
+
+// ============================================================================
+// Repair & Maintenance Functions
+// ============================================================================
+
+/**
+ * Fix missing timeline events for existing properties
+ * This function checks all user's properties and creates "property_listed" events
+ * for any that are missing them (e.g., created before trigger was installed)
+ */
+export async function fixMissingPropertyListedEvents(): Promise<{
+  fixed: number;
+  errors: number;
+  details: string[];
+}> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        fixed: 0,
+        errors: 0,
+        details: ['No authenticated user'],
+      };
+    }
+
+    // Get all user's properties
+    const { data: properties, error: propsError } = await supabase
+      .from('properties')
+      .select('id, title, created_at')
+      .eq('user_id', user.id);
+
+    if (propsError) throw propsError;
+
+    if (!properties || properties.length === 0) {
+      return {
+        fixed: 0,
+        errors: 0,
+        details: ['No properties found'],
+      };
+    }
+
+    const details: string[] = [];
+    let fixed = 0;
+    let errors = 0;
+
+    // Check each property for a property_listed event
+    for (const property of properties) {
+      try {
+        // Check if property_listed event already exists
+        const { data: existingEvent } = await supabase
+          .from('timeline_events')
+          .select('id')
+          .eq('property_id', property.id)
+          .eq('event_type', 'property_listed')
+          .single();
+
+        if (existingEvent) {
+          details.push(`✓ "${property.title}" - ya tiene evento de publicación`);
+          continue;
+        }
+
+        // Create the missing event with the property's original creation date
+        const result = await createPropertyListedEvent(property.id, property.title);
+
+        if (result) {
+          fixed++;
+          details.push(`✓ "${property.title}" - evento creado exitosamente`);
+        } else {
+          errors++;
+          details.push(`✗ "${property.title}" - error al crear evento`);
+        }
+      } catch (error) {
+        errors++;
+        details.push(`✗ "${property.title}" - error: ${error}`);
+      }
+    }
+
+    return {
+      fixed,
+      errors,
+      details,
+    };
+  } catch (error) {
+    console.error('Error fixing missing property listed events:', error);
+    return {
+      fixed: 0,
+      errors: 1,
+      details: [`Error general: ${error}`],
+    };
+  }
+}
