@@ -103,7 +103,7 @@ CREATE POLICY "Users can view timeline events"
     EXISTS (
       SELECT 1 FROM properties p
       WHERE p.id = timeline_events.property_id
-      AND p.user_id = auth.uid()
+      AND p.owner_id = auth.uid()
     )
     OR
     -- Events for properties they have documents for
@@ -132,7 +132,7 @@ CREATE POLICY "Users can create timeline events"
       OR EXISTS (
         SELECT 1 FROM properties p
         WHERE p.id = timeline_events.property_id
-        AND p.user_id = auth.uid()
+        AND p.owner_id = auth.uid()
       )
     )
   );
@@ -161,7 +161,7 @@ BEGIN
     created_by_name
   )
   SELECT
-    NEW.user_id,
+    NEW.owner_id,
     NEW.id,
     'Propiedad publicada',
     'La propiedad ' || NEW.title || ' ha sido publicada en el sistema',
@@ -169,7 +169,7 @@ BEGIN
     'completed',
     up.full_name
   FROM user_profiles up
-  WHERE up.id = NEW.user_id;
+  WHERE up.id = NEW.owner_id;
 
   RETURN NEW;
 END;

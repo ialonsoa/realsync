@@ -6,12 +6,12 @@
 SELECT
   p.id,
   p.title,
-  p.user_id,
+  p.owner_id,
   p.created_at,
   COUNT(te.id) as event_count
 FROM properties p
 LEFT JOIN timeline_events te ON te.property_id = p.id AND te.event_type = 'property_listed'
-GROUP BY p.id, p.title, p.user_id, p.created_at
+GROUP BY p.id, p.title, p.owner_id, p.created_at
 HAVING COUNT(te.id) = 0
 ORDER BY p.created_at DESC;
 
@@ -27,7 +27,7 @@ INSERT INTO timeline_events (
   created_at
 )
 SELECT
-  p.user_id,
+  p.owner_id,
   p.id,
   'Propiedad publicada',
   'La propiedad "' || p.title || '" ha sido publicada en el sistema',
@@ -36,7 +36,7 @@ SELECT
   COALESCE(up.full_name, 'Usuario'),
   p.created_at  -- Use the property's creation date for the event
 FROM properties p
-LEFT JOIN user_profiles up ON up.id = p.user_id
+LEFT JOIN user_profiles up ON up.id = p.owner_id
 WHERE NOT EXISTS (
   SELECT 1 FROM timeline_events te
   WHERE te.property_id = p.id
