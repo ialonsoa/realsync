@@ -12,7 +12,7 @@ import {
   KeyIcon,
 } from '@heroicons/react/24/outline';
 import { getPropertyTimelineWithProgress, getUserTimelineEvents } from '../../services/timeline';
-import { getUserDocuments } from '../../services/documents';
+import { propertiesService } from '../../services/properties';
 import type { TimelineWithProgress, TimelineEvent, TimelineEventType } from '../../types/timeline';
 import { PERU_TRANSACTION_STAGES, STAGE_ORDER } from '../../types/timeline';
 
@@ -78,7 +78,7 @@ export default function TimelinePage() {
       setLoading(true);
 
       // Load user's properties
-      const props = await getUserDocuments();
+      const props = await propertiesService.getProperties();
       setProperties(props);
 
       // Load all timeline events
@@ -86,8 +86,8 @@ export default function TimelinePage() {
       setAllEvents(events);
 
       // If there's at least one property, select the first one
-      if (props.length > 0 && props[0].property_id) {
-        setSelectedPropertyId(props[0].property_id);
+      if (props.length > 0 && props[0].id) {
+        setSelectedPropertyId(props[0].id);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -175,8 +175,8 @@ export default function TimelinePage() {
           >
             <option value="">Todas las propiedades</option>
             {properties.map((prop) => (
-              <option key={prop.id} value={prop.property_id}>
-                {prop.name}
+              <option key={prop.id} value={prop.id}>
+                {prop.title} - {prop.address}
               </option>
             ))}
           </select>
