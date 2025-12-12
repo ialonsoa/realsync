@@ -9,15 +9,40 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import { getCompleteAnalytics } from '../../services/analytics';
-import type { CompleteAnalytics } from '../../types/analytics';
+import type { CompleteAnalytics, UpdateGoalsInput } from '../../types/analytics';
+import { updateUserGoals } from '../../services/goals';
 
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState<CompleteAnalytics | null>(null);
+  const [showGoalsModal, setShowGoalsModal] = useState(false);
+  const [goalsForm, setGoalsForm] = useState<UpdateGoalsInput>({
+    monthly_sales_target: 5,
+    monthly_revenue_target: 1000000,
+    conversion_rate_target: 65,
+    verification_rate_target: 80,
+    timeline_activity_target: 5,
+    active_properties_target: 10,
+    average_days_to_sell_target: 45,
+  });
 
   useEffect(() => {
     loadAnalytics();
   }, []);
+
+  useEffect(() => {
+    if (analytics?.goals) {
+      setGoalsForm({
+        monthly_sales_target: analytics.goals.monthly_sales_target,
+        monthly_revenue_target: analytics.goals.monthly_revenue_target,
+        conversion_rate_target: analytics.goals.conversion_rate_target,
+        verification_rate_target: analytics.goals.verification_rate_target,
+        timeline_activity_target: analytics.goals.timeline_activity_target,
+        active_properties_target: analytics.goals.active_properties_target,
+        average_days_to_sell_target: analytics.goals.average_days_to_sell_target,
+      });
+    }
+  }, [analytics?.goals]);
 
   const loadAnalytics = async () => {
     try {
@@ -29,6 +54,27 @@ export default function AnalyticsPage() {
       toast.error('Error al cargar analíticas');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoalChange = (key: keyof UpdateGoalsInput, value: number) => {
+    setGoalsForm((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const handleSaveGoals = async () => {
+    try {
+      const updatedGoals = await updateUserGoals(goalsForm);
+      if (updatedGoals) {
+        setAnalytics((prev) => (prev ? { ...prev, goals: updatedGoals } : prev));
+        toast.success('Metas actualizadas');
+        setShowGoalsModal(false);
+      }
+    } catch (error) {
+      console.error('Error updating goals:', error);
+      toast.error('No se pudieron actualizar las metas');
     }
   };
 
@@ -83,22 +129,24 @@ export default function AnalyticsPage() {
     },
   ];
 
-  const maxSalesCount =
-    analytics.monthly_sales.length > 0
-      ? Math.max(...analytics.monthly_sales.map((d) => d.sales_count))
-      : 1;
-  const maxSalesValue =
-    analytics.monthly_sales.length > 0
-      ? Math.max(...analytics.monthly_sales.map((d) => d.total_value))
-      : 1;
+  const salesTarget = analytics.goals?.monthly_sales_target || 0;
+  const revenueTarget = analytics.goals?.monthly_revenue_target || 0;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Analíticas</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Métricas de rendimiento y estadísticas de tu cartera de propiedades
-        </p>
+    <div className="space-y-6 relative">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Analíticas</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Métricas de rendimiento y estadísticas de tu cartera de propiedades
+          </p>
+        </div>
+        <button
+          onClick={() => setShowGoalsModal(true)}
+          className="inline-flex items-center px-4 py-2 border border-primary-200 text-sm font-medium rounded-md text-primary-700 bg-primary-50 hover:bg-primary-100 transition-colors"
+        >
+          Editar metas
+        </button>
       </div>
 
       {/* Key Stats */}
@@ -139,25 +187,45 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Chart */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Ventas Mensuales</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Ventas Mensuales</h2>
+              <p className="text-xs text-gray-500">
+                Meta: {salesTarget > 0 ? `${salesTarget} ventas` : 'Sin meta configurada'}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowGoalsModal(true)}
+              className="text-xs text-primary-700 hover:text-primary-800 font-medium"
+            >
+              Ajustar meta
+            </button>
+          </div>
           {analytics.monthly_sales.length > 0 ? (
             <div className="space-y-3">
-              {analytics.monthly_sales.map((data) => (
-                <div key={data.month}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="font-medium text-gray-700">{data.month}</span>
-                    <span className="text-gray-500">
-                      {data.sales_count} {data.sales_count === 1 ? 'venta' : 'ventas'}
-                    </span>
+              {analytics.monthly_sales.map((data) => {
+                const salesProgress =
+                  salesTarget > 0 ? Math.round((data.sales_count / salesTarget) * 100) : 0;
+                const salesWidth = Math.min(100, Math.max(0, salesProgress));
+
+                return (
+                  <div key={data.month}>
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="font-medium text-gray-700">{data.month}</span>
+                      <span className="text-gray-600">
+                        {data.sales_count} {data.sales_count === 1 ? 'venta' : 'ventas'} ·{' '}
+                        {salesProgress}% de meta
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-primary-600 h-2 rounded-full transition-all"
+                        style={{ width: `${salesWidth}%` }}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-primary-600 h-2 rounded-full transition-all"
-                      style={{ width: `${(data.sales_count / maxSalesCount) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500 text-sm">
@@ -168,25 +236,45 @@ export default function AnalyticsPage() {
 
         {/* Revenue Chart */}
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Valor Total Mensual</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Valor Total Mensual</h2>
+              <p className="text-xs text-gray-500">
+                Meta: {revenueTarget > 0 ? `S/ ${revenueTarget.toLocaleString()}` : 'Sin meta configurada'}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowGoalsModal(true)}
+              className="text-xs text-primary-700 hover:text-primary-800 font-medium"
+            >
+              Ajustar meta
+            </button>
+          </div>
           {analytics.monthly_sales.length > 0 ? (
             <div className="space-y-3">
-              {analytics.monthly_sales.map((data) => (
-                <div key={data.month}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="font-medium text-gray-700">{data.month}</span>
-                    <span className="text-gray-500">
-                      S/ {data.total_value > 0 ? (data.total_value / 1000000).toFixed(1) : '0'}M
-                    </span>
+              {analytics.monthly_sales.map((data) => {
+                const revenueProgress =
+                  revenueTarget > 0 ? Math.round((data.total_value / revenueTarget) * 100) : 0;
+                const revenueWidth = Math.min(100, Math.max(0, revenueProgress));
+
+                return (
+                  <div key={data.month}>
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="font-medium text-gray-700">{data.month}</span>
+                      <span className="text-gray-600">
+                        S/ {data.total_value > 0 ? (data.total_value / 1000000).toFixed(1) : '0'}M ·{' '}
+                        {revenueProgress}% de meta
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-success-500 h-2 rounded-full transition-all"
+                        style={{ width: `${revenueWidth}%` }}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-success-500 h-2 rounded-full transition-all"
-                      style={{ width: `${(data.total_value / maxSalesValue) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500 text-sm">
@@ -452,6 +540,140 @@ export default function AnalyticsPage() {
                 </li>
               )}
           </ul>
+        </div>
+      )}
+      {showGoalsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Configurar metas</h3>
+                <p className="text-sm text-gray-500">Ajusta tus objetivos para cada métrica</p>
+              </div>
+              <button
+                onClick={() => setShowGoalsModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+                aria-label="Cerrar"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Meta de ventas mensuales
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={goalsForm.monthly_sales_target ?? ''}
+                  onChange={(e) => handleGoalChange('monthly_sales_target', Number(e.target.value))}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Meta de valor mensual (S/)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={goalsForm.monthly_revenue_target ?? ''}
+                  onChange={(e) =>
+                    handleGoalChange('monthly_revenue_target', Number(e.target.value))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tasa de conversión (%)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={goalsForm.conversion_rate_target ?? ''}
+                  onChange={(e) =>
+                    handleGoalChange('conversion_rate_target', Number(e.target.value))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Documentos verificados (%)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={goalsForm.verification_rate_target ?? ''}
+                  onChange={(e) =>
+                    handleGoalChange('verification_rate_target', Number(e.target.value))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Actividad timeline (eventos/prop)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.1"
+                  value={goalsForm.timeline_activity_target ?? ''}
+                  onChange={(e) =>
+                    handleGoalChange('timeline_activity_target', Number(e.target.value))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Propiedades activas
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={goalsForm.active_properties_target ?? ''}
+                  onChange={(e) =>
+                    handleGoalChange('active_properties_target', Number(e.target.value))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Días promedio para vender
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={goalsForm.average_days_to_sell_target ?? ''}
+                  onChange={(e) =>
+                    handleGoalChange('average_days_to_sell_target', Number(e.target.value))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={() => setShowGoalsModal(false)}
+                className="px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveGoals}
+                className="px-4 py-2 rounded-md bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700"
+              >
+                Guardar metas
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -11,6 +11,7 @@ import type {
 } from '../types/analytics';
 import { getTimelineStats } from './timeline';
 import { getDocumentStats } from './documents';
+import { getUserGoals } from './goals';
 
 /**
  * Analytics Service - calculates real-time analytics from properties, timeline, and documents
@@ -33,6 +34,7 @@ export async function getCompleteAnalytics(): Promise<CompleteAnalytics> {
       districtInsights,
       timelineAnalytics,
       documentAnalytics,
+      goals,
     ] = await Promise.all([
       getAnalyticsStats(),
       getMonthlySalesData(),
@@ -41,6 +43,7 @@ export async function getCompleteAnalytics(): Promise<CompleteAnalytics> {
       getDistrictInsights(),
       getTimelineAnalytics(),
       getDocumentAnalytics(),
+      getUserGoals(),
     ]);
 
     return {
@@ -51,6 +54,7 @@ export async function getCompleteAnalytics(): Promise<CompleteAnalytics> {
       district_insights: districtInsights,
       timeline_analytics: timelineAnalytics,
       document_analytics: documentAnalytics,
+      goals,
     };
   } catch (error) {
     console.error('Error getting complete analytics:', error);

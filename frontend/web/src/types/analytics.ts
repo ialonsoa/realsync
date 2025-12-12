@@ -1,5 +1,29 @@
 // Analytics Types for RealSync
 
+export interface AnalyticsGoals {
+  id: string;
+  user_id: string;
+  monthly_sales_target: number;
+  monthly_revenue_target: number;
+  conversion_rate_target: number;
+  verification_rate_target: number;
+  timeline_activity_target: number;
+  active_properties_target: number;
+  average_days_to_sell_target: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateGoalsInput {
+  monthly_sales_target?: number;
+  monthly_revenue_target?: number;
+  conversion_rate_target?: number;
+  verification_rate_target?: number;
+  timeline_activity_target?: number;
+  active_properties_target?: number;
+  average_days_to_sell_target?: number;
+}
+
 export interface AnalyticsStats {
   total_properties: number;
   active_properties: number;
@@ -71,4 +95,5 @@ export interface CompleteAnalytics {
   district_insights: DistrictInsight[];
   timeline_analytics: TimelineAnalytics;
   document_analytics: DocumentAnalytics;
+  goals: AnalyticsGoals;
 }
