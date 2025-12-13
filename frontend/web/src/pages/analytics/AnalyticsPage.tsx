@@ -370,25 +370,69 @@ export default function AnalyticsPage() {
       <div className="bg-white shadow rounded-lg p-6">
         <h2 className="text-lg font-medium text-gray-900 mb-6">Métricas de Rendimiento</h2>
         {analytics.performance_metrics.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {analytics.performance_metrics.map((metric) => (
-              <div key={metric.label} className="text-center">
-                <div className="text-3xl font-bold text-gray-900 mb-1">{metric.value}</div>
-                <div className="text-sm font-medium text-gray-500 mb-2">{metric.label}</div>
-                <div
-                  className={`text-xs ${
-                    metric.status === 'success'
-                      ? 'text-success-600'
-                      : metric.status === 'warning'
-                      ? 'text-warning-600'
-                      : 'text-danger-600'
-                  }`}
-                >
-                  {metric.status === 'success' ? '✓' : metric.status === 'warning' ? '⚠' : '✗'} Meta:{' '}
-                  {metric.target}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {analytics.performance_metrics.map((metric) => {
+              // Calculate progress percentage for circular indicator
+              const current = parseFloat(metric.value);
+              const target = parseFloat(metric.target);
+              const percentage = target > 0 ? Math.min(100, (current / target) * 100) : 0;
+
+              // Determine color based on status
+              const strokeColor =
+                metric.status === 'success'
+                  ? '#10b981' // green-500
+                  : metric.status === 'warning'
+                  ? '#f59e0b' // amber-500
+                  : '#ef4444'; // red-500
+
+              const radius = 60;
+              const circumference = 2 * Math.PI * radius;
+              const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+              return (
+                <div key={metric.label} className="flex flex-col items-center">
+                  {/* Circular Progress */}
+                  <div className="relative inline-flex items-center justify-center mb-3">
+                    <svg className="transform -rotate-90" width="140" height="140">
+                      {/* Background circle */}
+                      <circle
+                        cx="70"
+                        cy="70"
+                        r={radius}
+                        stroke="#e5e7eb"
+                        strokeWidth="8"
+                        fill="none"
+                      />
+                      {/* Progress circle */}
+                      <circle
+                        cx="70"
+                        cy="70"
+                        r={radius}
+                        stroke={strokeColor}
+                        strokeWidth="8"
+                        fill="none"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
+                        strokeLinecap="round"
+                        className="transition-all duration-500 ease-out"
+                      />
+                    </svg>
+                    {/* Center value */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">{Math.round(percentage)}%</div>
+                    </div>
+                  </div>
+                  {/* Label and goal */}
+                  <div className="text-sm font-medium text-gray-700 text-center mb-1">
+                    {metric.label}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Meta: {metric.target}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500 text-sm">
