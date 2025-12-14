@@ -95,9 +95,17 @@ export default function Sidebar() {
         <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
           <NavLink to="/profile" className="flex items-center w-full hover:bg-gray-50 rounded-md p-2 -m-2 transition-colors">
             <div className="flex-shrink-0">
-              <div className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-semibold">
-                {user?.full_name?.[0] || user?.email?.[0]?.toUpperCase()}
-              </div>
+              {user?.profile_picture_url ? (
+                <img
+                  src={user.profile_picture_url}
+                  alt={user?.full_name || 'Profile'}
+                  className="h-10 w-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-semibold">
+                  {user?.full_name?.[0] || user?.email?.[0]?.toUpperCase()}
+                </div>
+              )}
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-700">
