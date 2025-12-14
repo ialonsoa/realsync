@@ -7,7 +7,7 @@ interface UserProfile {
   full_name: string;
   role: 'OWNER' | 'BUYER' | 'AGENT';
   phone?: string;
-  profile_picture_url?: string;
+  profile_photo_url?: string;
   subscription_tier: 'free' | 'pro';
   subscription_status: 'active' | 'cancelled' | 'past_due';
 }
@@ -71,7 +71,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             full_name: profile.full_name || 'User Name',
             role: profile.role,
             phone: profile.phone,
-            profile_picture_url: profile.profile_picture_url,
+            profile_photo_url: profile.profile_photo_url,
             subscription_tier: profile.subscription_tier,
             subscription_status: profile.subscription_status,
           },
@@ -103,7 +103,7 @@ export const useAuthStore = create<AuthState>((set) => ({
               full_name: profile.full_name || 'User Name',
               role: profile.role,
               phone: profile.phone,
-              profile_picture_url: profile.profile_picture_url,
+              profile_photo_url: profile.profile_photo_url,
               subscription_tier: profile.subscription_tier,
               subscription_status: profile.subscription_status,
             },

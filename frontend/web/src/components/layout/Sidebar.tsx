@@ -95,9 +95,9 @@ export default function Sidebar() {
         <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
           <NavLink to="/profile" className="flex items-center w-full hover:bg-gray-50 rounded-md p-2 -m-2 transition-colors">
             <div className="flex-shrink-0">
-              {user?.profile_picture_url ? (
+              {user?.profile_photo_url ? (
                 <img
-                  src={user.profile_picture_url}
+                  src={user.profile_photo_url}
                   alt={user?.full_name || 'Profile'}
                   className="h-10 w-10 rounded-full object-cover"
                 />
