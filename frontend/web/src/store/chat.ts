@@ -162,10 +162,29 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   sendMessage: async (conversationId: string, body: string) => {
-    const { currentUserId } = get();
+    const { currentUserId, messages } = get();
     if (!currentUserId) return;
 
+    // Create optimistic message (shows instantly in UI)
+    const optimisticMessage = {
+      id: `temp-${Date.now()}`,
+      conversation_id: conversationId,
+      author_id: currentUserId,
+      body,
+      created_at: new Date().toISOString(),
+    };
+
+    // Add to state immediately (optimistic update)
+    const convMessages = messages[conversationId] || [];
+    set({
+      messages: {
+        ...messages,
+        [conversationId]: [...convMessages, optimisticMessage],
+      },
+    });
+
     try {
+      // Insert to database in background
       const { data, error } = await supabase
         .from('messages')
         .insert({
@@ -179,8 +198,27 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       if (error) {
         console.error('Error sending message:', error);
+        // Remove optimistic message on error
+        const currentMessages = get().messages[conversationId] || [];
+        set({
+          messages: {
+            ...get().messages,
+            [conversationId]: currentMessages.filter(m => m.id !== optimisticMessage.id),
+          },
+        });
         throw error;
       }
+
+      // Replace optimistic message with real one
+      const currentMessages = get().messages[conversationId] || [];
+      set({
+        messages: {
+          ...get().messages,
+          [conversationId]: currentMessages.map(m =>
+            m.id === optimisticMessage.id ? data : m
+          ),
+        },
+      });
 
       // Update conversation last_activity_at
       await supabase
