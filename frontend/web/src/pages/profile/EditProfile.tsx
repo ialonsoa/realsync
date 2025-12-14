@@ -142,6 +142,9 @@ export default function EditProfile() {
         phone: basicFormData.phone,
       });
 
+      // Refresh the user profile in the auth store to update the sidebar
+      await useAuthStore.getState().refreshProfile();
+
       toast.success('Perfil actualizado correctamente');
       navigate('/profile');
     } catch (error) {

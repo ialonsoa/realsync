@@ -21,6 +21,7 @@ interface AuthState {
   setSession: (session: any | null) => void;
   signOut: () => Promise<void>;
   initialize: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -47,6 +48,36 @@ export const useAuthStore = create<AuthState>((set) => ({
       session: null,
       isAuthenticated: false,
     });
+  },
+
+  refreshProfile: async () => {
+    // Get current session
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session?.user) {
+      // Fetch user profile
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profile) {
+        set({
+          user: {
+            id: profile.id,
+            email: session.user.email!,
+            full_name: profile.full_name || 'User Name',
+            role: profile.role,
+            phone: profile.phone,
+            profile_photo_url: profile.profile_photo_url,
+            subscription_tier: profile.subscription_tier,
+            subscription_status: profile.subscription_status,
+          },
+          isAuthenticated: true,
+        });
+      }
+    }
   },
 
   initialize: async () => {
