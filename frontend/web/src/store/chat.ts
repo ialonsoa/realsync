@@ -206,7 +206,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const { data: conversations, error } = await supabase
         .from('conversations')
         .select('*')
-        .contains('participants', [currentUserId])
+        .filter('participants', 'cs', `{"${currentUserId}"}`)
         .order('last_activity_at', { ascending: false });
 
       if (error) {
