@@ -205,16 +205,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       // Get conversations where user is a participant
       const { data: conversations, error } = await supabase
         .from('conversations')
-        .select(`
-          *,
-          last_message:messages!conversations_last_message_id_fkey (
-            id,
-            conversation_id,
-            author_id,
-            body,
-            created_at
-          )
-        `)
+        .select('*')
         .contains('participants', [currentUserId])
         .order('last_activity_at', { ascending: false });
 
@@ -223,24 +214,36 @@ export const useChatStore = create<ChatState>((set, get) => ({
         return;
       }
 
-      // For each conversation, count unread messages
-      const conversationsWithUnread = await Promise.all(
+      // For each conversation, get last message and count unread
+      const conversationsWithData = await Promise.all(
         (conversations || []).map(async (conv) => {
+          // Get last message if there's a last_message_id
+          let lastMessage = null;
+          if (conv.last_message_id) {
+            const { data } = await supabase
+              .from('messages')
+              .select('*')
+              .eq('id', conv.last_message_id)
+              .single();
+            lastMessage = data;
+          }
+
+          // Count unread messages (simple version)
           const { count } = await supabase
             .from('messages')
             .select('*', { count: 'exact', head: true })
             .eq('conversation_id', conv.id)
-            .neq('author_id', currentUserId)
-            .or(`read_by.is.null,read_by.not.cs.${JSON.stringify([{ user_id: currentUserId }])}`);
+            .neq('author_id', currentUserId);
 
           return {
             ...conv,
+            last_message: lastMessage,
             unread_count: count || 0,
           };
         })
       );
 
-      set({ conversations: conversationsWithUnread });
+      set({ conversations: conversationsWithData });
     } catch (error) {
       console.error('Error loading conversations:', error);
     }
