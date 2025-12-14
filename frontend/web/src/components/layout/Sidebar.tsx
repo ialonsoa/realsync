@@ -36,8 +36,12 @@ export default function Sidebar() {
     <div className="hidden md:flex md:flex-shrink-0">
       <div className="flex flex-col w-64 bg-white border-r border-gray-200">
         <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-          <div className="flex items-center flex-shrink-0 px-4">
+          <div className="flex flex-col items-start flex-shrink-0 px-4 space-y-2">
             <h1 className="text-2xl font-bold text-primary-600">RealSync</h1>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">powered by</span>
+              <img src="/grupo-ddial-logo.webp" alt="Grupo DDial" className="h-6" />
+            </div>
           </div>
           <nav className="mt-8 flex-1 px-2 space-y-1">
             {filteredNavigation.map((item) => (
