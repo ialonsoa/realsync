@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useChatStore } from '../../store/chat';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
@@ -8,24 +8,10 @@ interface MessageInputProps {
 
 export default function MessageInput({ conversationId }: MessageInputProps) {
   const [message, setMessage] = useState('');
-  const { sendMessage, startTyping, stopTyping } = useChatStore();
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { sendMessage } = useChatStore();
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
-
-    // Start typing indicator
-    startTyping(conversationId);
-
-    // Clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Stop typing after 2 seconds of inactivity
-    typingTimeoutRef.current = setTimeout(() => {
-      stopTyping(conversationId);
-    }, 2000);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,12 +21,6 @@ export default function MessageInput({ conversationId }: MessageInputProps) {
 
     sendMessage(conversationId, message.trim());
     setMessage('');
-
-    // Stop typing indicator
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    stopTyping(conversationId);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

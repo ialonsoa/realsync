@@ -6,21 +6,20 @@ import MessageList from '../../components/chat/MessageList';
 import MessageInput from '../../components/chat/MessageInput';
 
 export default function ChatPage() {
-  const { session } = useAuthStore();
-  const { initialize, disconnect, activeConversationId, isConnected, messages, typingUsers } = useChatStore();
+  const { user } = useAuthStore();
+  const { initialize, disconnect, activeConversationId, isConnected, messages } = useChatStore();
 
   useEffect(() => {
-    if (session?.access_token) {
-      initialize(session.access_token);
+    if (user?.id) {
+      initialize(user.id);
     }
 
     return () => {
       disconnect();
     };
-  }, [session, initialize, disconnect]);
+  }, [user, initialize, disconnect]);
 
   const activeMessages = activeConversationId ? messages[activeConversationId] || [] : [];
-  const activeTypingUsers = activeConversationId ? typingUsers[activeConversationId] || [] : [];
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -46,7 +45,7 @@ export default function ChatPage() {
         <div className="flex-1 flex flex-col bg-white">
           {activeConversationId ? (
             <>
-              <MessageList messages={activeMessages} typingUsers={activeTypingUsers} />
+              <MessageList messages={activeMessages} />
               <MessageInput conversationId={activeConversationId} />
             </>
           ) : (

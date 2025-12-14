@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { io, Socket } from 'socket.io-client';
+import { supabase } from '@/lib/supabase';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 interface Message {
   id: string;
@@ -18,7 +19,6 @@ interface Conversation {
   id: string;
   type: 'PROPERTY_CHAT' | 'DIRECT_MESSAGE' | 'CLIENT_NOTE';
   property_id?: string;
-  transaction_id?: string;
   participants: string[];
   name?: string;
   last_message?: Message;
@@ -26,167 +26,221 @@ interface Conversation {
   unread_count: number;
 }
 
-interface TypingUser {
-  userId: string;
-  userName: string;
-}
-
 interface ChatState {
-  socket: Socket | null;
+  channel: RealtimeChannel | null;
   conversations: Conversation[];
   messages: Record<string, Message[]>;
   activeConversationId: string | null;
-  typingUsers: Record<string, TypingUser[]>;
   isConnected: boolean;
+  currentUserId: string | null;
 
-  initialize: (token: string) => void;
+  initialize: (userId: string) => void;
   disconnect: () => void;
   selectConversation: (conversationId: string) => void;
-  sendMessage: (conversationId: string, body: string) => void;
+  sendMessage: (conversationId: string, body: string) => Promise<void>;
   loadConversations: () => Promise<void>;
   loadMessages: (conversationId: string) => Promise<void>;
-  markAsRead: (conversationId: string, messageIds: string[]) => void;
-  startTyping: (conversationId: string) => void;
-  stopTyping: (conversationId: string) => void;
+  markAsRead: (conversationId: string, messageIds: string[]) => Promise<void>;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
-  socket: null,
+  channel: null,
   conversations: [],
   messages: {},
   activeConversationId: null,
-  typingUsers: {},
   isConnected: false,
+  currentUserId: null,
 
-  initialize: (token: string) => {
-    const socket = io(import.meta.env.VITE_CHAT_SERVICE_URL || 'http://localhost:8002', {
-      auth: { token },
-      transports: ['websocket', 'polling'],
-    });
+  initialize: (userId: string) => {
+    console.log('Initializing chat with Supabase Realtime for user:', userId);
 
-    socket.on('connect', () => {
-      console.log('Chat connected');
-      set({ isConnected: true });
-      get().loadConversations();
-    });
+    set({ currentUserId: userId, isConnected: true });
 
-    socket.on('disconnect', () => {
-      console.log('Chat disconnected');
-      set({ isConnected: false });
-    });
+    // Load initial data
+    get().loadConversations();
 
-    // Message events
-    socket.on('message:new', (message: Message) => {
-      const { messages, activeConversationId } = get();
-      const convMessages = messages[message.conversation_id] || [];
-
-      set({
-        messages: {
-          ...messages,
-          [message.conversation_id]: [...convMessages, message],
+    // Subscribe to messages table for real-time updates
+    const channel = supabase
+      .channel('chat-messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
         },
-      });
+        (payload) => {
+          console.log('New message received:', payload);
+          const newMessage = payload.new as Message;
 
-      // Update conversation last message
-      const { conversations } = get();
-      const updatedConversations = conversations.map((conv) =>
-        conv.id === message.conversation_id
-          ? { ...conv, last_message: message, last_activity_at: message.created_at }
-          : conv
-      );
-      set({ conversations: updatedConversations });
+          const { messages, activeConversationId } = get();
+          const convMessages = messages[newMessage.conversation_id] || [];
 
-      // Auto-mark as read if conversation is active
-      if (activeConversationId === message.conversation_id) {
-        get().markAsRead(message.conversation_id, [message.id]);
-      }
-    });
+          // Add message to state
+          set({
+            messages: {
+              ...messages,
+              [newMessage.conversation_id]: [...convMessages, newMessage],
+            },
+          });
 
-    socket.on('message:read', (data: { messageIds: string[]; userId: string; readAt: string }) => {
-      const { messages } = get();
-      const updatedMessages = { ...messages };
+          // Update conversation last message
+          const { conversations } = get();
+          const updatedConversations = conversations.map((conv) =>
+            conv.id === newMessage.conversation_id
+              ? {
+                  ...conv,
+                  last_message: newMessage,
+                  last_activity_at: newMessage.created_at,
+                  unread_count: activeConversationId === newMessage.conversation_id ? 0 : conv.unread_count + 1
+                }
+              : conv
+          );
+          set({ conversations: updatedConversations });
 
-      Object.keys(updatedMessages).forEach((convId) => {
-        updatedMessages[convId] = updatedMessages[convId].map((msg) => {
-          if (data.messageIds.includes(msg.id)) {
-            const readBy = msg.read_by || [];
-            return {
-              ...msg,
-              read_by: [...readBy, { user_id: data.userId, read_at: data.readAt }],
-            };
+          // Auto-mark as read if conversation is active
+          if (activeConversationId === newMessage.conversation_id && newMessage.author_id !== userId) {
+            get().markAsRead(newMessage.conversation_id, [newMessage.id]);
           }
-          return msg;
-        });
-      });
-
-      set({ messages: updatedMessages });
-    });
-
-    // Typing events
-    socket.on('typing:start', (data: { conversationId: string; user: TypingUser }) => {
-      const { typingUsers } = get();
-      const convTyping = typingUsers[data.conversationId] || [];
-
-      if (!convTyping.find((u) => u.userId === data.user.userId)) {
-        set({
-          typingUsers: {
-            ...typingUsers,
-            [data.conversationId]: [...convTyping, data.user],
-          },
-        });
-      }
-    });
-
-    socket.on('typing:stop', (data: { conversationId: string; userId: string }) => {
-      const { typingUsers } = get();
-      const convTyping = typingUsers[data.conversationId] || [];
-
-      set({
-        typingUsers: {
-          ...typingUsers,
-          [data.conversationId]: convTyping.filter((u) => u.userId !== data.userId),
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
         },
-      });
-    });
+        (payload) => {
+          console.log('Message updated:', payload);
+          const updatedMessage = payload.new as Message;
 
-    set({ socket });
+          const { messages } = get();
+          const convMessages = messages[updatedMessage.conversation_id] || [];
+
+          set({
+            messages: {
+              ...messages,
+              [updatedMessage.conversation_id]: convMessages.map((msg) =>
+                msg.id === updatedMessage.id ? updatedMessage : msg
+              ),
+            },
+          });
+        }
+      )
+      .subscribe((status) => {
+        console.log('Supabase Realtime status:', status);
+        set({ isConnected: status === 'SUBSCRIBED' });
+      });
+
+    set({ channel });
   },
 
   disconnect: () => {
-    const { socket } = get();
-    if (socket) {
-      socket.disconnect();
+    const { channel } = get();
+    if (channel) {
+      supabase.removeChannel(channel);
     }
-    set({ socket: null, isConnected: false });
+    set({ channel: null, isConnected: false });
   },
 
   selectConversation: (conversationId: string) => {
-    const { socket } = get();
-    if (socket) {
-      socket.emit('conversation:join', { conversationId });
-    }
     set({ activeConversationId: conversationId });
     get().loadMessages(conversationId);
+
+    // Mark existing messages as read
+    const { messages } = get();
+    const convMessages = messages[conversationId] || [];
+    const unreadMessageIds = convMessages
+      .filter(msg => msg.author_id !== get().currentUserId)
+      .filter(msg => !msg.read_by?.some(r => r.user_id === get().currentUserId))
+      .map(msg => msg.id);
+
+    if (unreadMessageIds.length > 0) {
+      get().markAsRead(conversationId, unreadMessageIds);
+    }
   },
 
-  sendMessage: (conversationId: string, body: string) => {
-    const { socket } = get();
-    if (!socket) return;
+  sendMessage: async (conversationId: string, body: string) => {
+    const { currentUserId } = get();
+    if (!currentUserId) return;
 
-    const tempId = `temp-${Date.now()}`;
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          author_id: currentUserId,
+          body,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
 
-    socket.emit('message:send', {
-      conversationId,
-      body,
-      tempId,
-    });
+      if (error) {
+        console.error('Error sending message:', error);
+        throw error;
+      }
+
+      // Update conversation last_activity_at
+      await supabase
+        .from('conversations')
+        .update({
+          last_activity_at: new Date().toISOString(),
+          last_message_id: data.id
+        })
+        .eq('id', conversationId);
+
+      console.log('Message sent:', data);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   },
 
   loadConversations: async () => {
+    const { currentUserId } = get();
+    if (!currentUserId) return;
+
     try {
-      const response = await fetch('http://localhost:8002/api/v1/conversations?userId=temp-user-id');
-      const conversations = await response.json();
-      set({ conversations });
+      // Get conversations where user is a participant
+      const { data: conversations, error } = await supabase
+        .from('conversations')
+        .select(`
+          *,
+          last_message:messages!conversations_last_message_id_fkey (
+            id,
+            conversation_id,
+            author_id,
+            body,
+            created_at
+          )
+        `)
+        .contains('participants', [currentUserId])
+        .order('last_activity_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading conversations:', error);
+        return;
+      }
+
+      // For each conversation, count unread messages
+      const conversationsWithUnread = await Promise.all(
+        (conversations || []).map(async (conv) => {
+          const { count } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('conversation_id', conv.id)
+            .neq('author_id', currentUserId)
+            .or(`read_by.is.null,read_by.not.cs.${JSON.stringify([{ user_id: currentUserId }])}`);
+
+          return {
+            ...conv,
+            unread_count: count || 0,
+          };
+        })
+      );
+
+      set({ conversations: conversationsWithUnread });
     } catch (error) {
       console.error('Error loading conversations:', error);
     }
@@ -194,12 +248,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   loadMessages: async (conversationId: string) => {
     try {
-      const response = await fetch(`http://localhost:8002/api/v1/conversations/${conversationId}/messages`);
-      const messages = await response.json();
+      const { data: messages, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true })
+        .limit(100);
+
+      if (error) {
+        console.error('Error loading messages:', error);
+        return;
+      }
+
       set((state) => ({
         messages: {
           ...state.messages,
-          [conversationId]: messages,
+          [conversationId]: messages || [],
         },
       }));
     } catch (error) {
@@ -207,24 +271,45 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
-  markAsRead: (conversationId: string, messageIds: string[]) => {
-    const { socket } = get();
-    if (!socket) return;
+  markAsRead: async (conversationId: string, messageIds: string[]) => {
+    const { currentUserId } = get();
+    if (!currentUserId || messageIds.length === 0) return;
 
-    socket.emit('message:read', { conversationId, messageIds });
-  },
+    try {
+      const readEntry = { user_id: currentUserId, read_at: new Date().toISOString() };
 
-  startTyping: (conversationId: string) => {
-    const { socket } = get();
-    if (!socket) return;
+      for (const messageId of messageIds) {
+        // Get current message
+        const { data: message } = await supabase
+          .from('messages')
+          .select('read_by')
+          .eq('id', messageId)
+          .single();
 
-    socket.emit('typing:start', { conversationId });
-  },
+        if (message) {
+          const readBy = message.read_by || [];
 
-  stopTyping: (conversationId: string) => {
-    const { socket } = get();
-    if (!socket) return;
+          // Check if already read by this user
+          if (!readBy.find((r: any) => r.user_id === currentUserId)) {
+            readBy.push(readEntry);
 
-    socket.emit('typing:stop', { conversationId });
+            await supabase
+              .from('messages')
+              .update({ read_by: readBy })
+              .eq('id', messageId);
+          }
+        }
+      }
+
+      // Update local state
+      const { conversations } = get();
+      set({
+        conversations: conversations.map((conv) =>
+          conv.id === conversationId ? { ...conv, unread_count: 0 } : conv
+        ),
+      });
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
   },
 }));
